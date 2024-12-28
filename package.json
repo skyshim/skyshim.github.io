@@ -1,5 +1,5 @@
 {
-  "homepage" : "https://skyshim.github.io/skyshim/skyshim-english-word/",
+  "homepage": "https://skyshim.github.io/skyshim/skyshim-english-word/",
   "name": "english_word",
   "version": "1.0.0",
   "description": "\"# skyshim.github.io\"",
@@ -11,7 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",
-    "gh-pages": "^6.2.0",
     "nodemon": "^3.1.9"
   }
 }
