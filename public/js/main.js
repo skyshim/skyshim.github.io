@@ -1,5 +1,5 @@
-import config from "../../config/apikey"
-const APIKEY = config.apiKey
+const env = require('dotenv')
+env.config()
 
 async function create5exs(word) {
     const examples5 = document.getElementById('examples5');
@@ -16,7 +16,7 @@ async function create5exs(word) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': APIKEY, // Replace YOUR_API_KEY with your actual API key
+            'Authorization': API_KEY, // Replace YOUR_API_KEY with your actual API key
         },
         body: JSON.stringify({
             model: 'gpt-3.5-turbo',
