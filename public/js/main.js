@@ -1,4 +1,4 @@
-import config from "../../config/apikey.js"
+import config from "../../config/apikey"
 const APIKEY = config.apiKey
 
 async function create5exs(word) {
