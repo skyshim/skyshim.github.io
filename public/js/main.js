@@ -1,6 +1,3 @@
-const env = require('dotenv')
-env.config()
-
 async function create5exs(word) {
     const examples5 = document.getElementById('examples5');
 
@@ -16,7 +13,7 @@ async function create5exs(word) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': API_KEY, // Replace YOUR_API_KEY with your actual API key
+            'Authorization': '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', // Replace YOUR_API_KEY with your actual API key
         },
         body: JSON.stringify({
             model: 'gpt-3.5-turbo',
