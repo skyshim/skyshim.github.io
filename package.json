@@ -1,16 +1,11 @@
 {
-  "homepage": "https://skyshim.github.io/skyshim/skyshim-english-word/",
-  "name": "english_word",
-  "version": "1.0.0",
-  "description": "\"# skyshim.github.io\"",
-  "main": "server.js",
+  "homepage": "https://skyshim.github.io/",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",
+    "gh-pages": "^6.2.0",
     "nodemon": "^3.1.9"
   }
 }
