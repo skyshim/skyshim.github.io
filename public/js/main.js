@@ -27,7 +27,7 @@ async function create5exs(word) {
             },
             {
                 role: 'user',
-                content: `You must suggest "sentences" and "korean meanings" only. It means that you are not allowed to provide any additional information. You must alsoh comply with the following form: {keyword} : {English Sentence} | {Korean Expression}. (ex: applauded : The audience applauded. | 관객들이 박수쳤다.) Keeping these rules, please provide 5 example sentences using the word: "${word}".`
+                content: `First, do not provide any additional information. Second, comply with the following form: "applauded : The audience applauded. | 관객들이 박수쳤다." Keeping these rules, please provide 5 example sentences using the word: "${word}".`
             }
         ]
         })
