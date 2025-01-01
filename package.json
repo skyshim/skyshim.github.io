@@ -4,6 +4,8 @@
   },
   "dependencies": {
     "express": "^4.21.2",
-    "nodemon": "^3.1.9"
+    "firebase": "^11.1.0",
+    "nodemon": "^3.1.9",
+    "openai": "^4.77.0"
   }
 }
