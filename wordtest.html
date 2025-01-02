@@ -36,8 +36,13 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
         button {
-            margin: 10px 0px 0px 0px;
+            margin-top: 10px;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
@@ -61,7 +66,10 @@
             <div id="chapter-container">
                 <select id="chapters" multiple size="10"></select>
             </div>
-            <button onclick="startQuiz()" disabled id="start-button">Start Quiz</button>
+            <div class="button-container">
+                <button onclick="startQuiz()" disabled id="start-button">시작</button>
+                <button onclick="goBack()">홈으로</button>
+            </div>
         </div>
         <div id="quiz-section" class="hidden">
             <div class="question">
@@ -73,23 +81,38 @@
             <div class="input-container">
                 <form id="quiz-form" onsubmit="return handleSubmit(event)">
                     <input type="text" id="answer" placeholder="Type your answer here">
-                    <button type="submit">Submit</button>
+                    <div class="button-container">
+                        <button type="submit">Submit</button>
+                        <button id="pass-button" onclick="passWord()">Pass</button>
+                    </div>
                 </form>
-                <button id="pass-button" onclick="passWord()">Pass</button>
             </div>
             <div class="result hidden" id="result"></div>
         </div>
-        <button onclick="goBack()">Go to Home</button>
     </div>
 
     <script type="module">
         import { loadFirebaseData } from "/public/js/firebase.js";
         
+        // Custom names for the wordbooks
+        const customNames = {
+            "godanggeut": "고단끝",
+            "neugryeul-voca": "능률VOCA",
+            // Add more mappings as needed
+        };
+
         // Declare global variables
         let data = {};
         let selectedData = [];
         let currentIndex = 0;
         let failedAttempts = 0;
+
+        function shuffleArray(array) { 
+            for (let i = array.length - 1; i > 0; i--) { 
+                const j = Math.floor(Math.random() * (i + 1)); 
+                [array[i], array[j]] = [array[j], array[i]]; 
+            } return array; 
+        }
 
         // Make functions globally available
         window.populateChapters = function() {
@@ -121,6 +144,8 @@
                     return acc.concat(data[wordbook][chapter]);
                 }, []);
 
+                selectedData = shuffleArray(selectedData);
+
                 currentIndex = 0;
                 failedAttempts = 0;
                 document.getElementById('category-selection').classList.add('hidden');
@@ -136,14 +161,20 @@
         };
 
         window.passWord = function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = `Wrong! The answer was ${selectedData[currentIndex].word}.`;
+            resultDiv.style.color = "red";
             currentIndex++;
-            loadQuestion();
+            setTimeout(loadQuestion, 2000);
         };
 
         function loadQuestion() {
             if (currentIndex < selectedData.length) {
-                document.getElementById('english-sentence').innerHTML = selectedData[currentIndex].english;
-                document.getElementById('korean-hint').innerHTML = selectedData[currentIndex].korean;
+                const examples = selectedData[currentIndex].examples;
+                const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            
+                document.getElementById('english-sentence').innerHTML = randomExample.english;
+                document.getElementById('korean-hint').innerHTML = randomExample.korean;
                 document.getElementById('answer').value = "";
                 document.getElementById('result').classList.add('hidden');
                 failedAttempts = 0;
@@ -153,6 +184,7 @@
                 alert('Congratulations! You have completed the quiz!');
             }
         }
+
 
         function checkAnswer() {
             const userAnswer = document.getElementById('answer').value.trim();
@@ -165,7 +197,7 @@
                 setTimeout(loadQuestion, 1000);
             } else {
                 failedAttempts++;
-                resultDiv.textContent = `Wrong! ${3 - failedAttempts} attempts left`;
+                resultDiv.textContent = `Wrong! ${3 - failedAttempts} attempts left.`;
                 resultDiv.style.color = "red";
 
                 if (failedAttempts >= 3) {
@@ -184,7 +216,7 @@
             for (let wordbook in data) {
                 const option = document.createElement('option');
                 option.value = wordbook;
-                option.textContent = wordbook.charAt(0).toUpperCase() + wordbook.slice(1);
+                option.textContent = customNames[wordbook] || wordbook.charAt(0).toUpperCase() + wordbook.slice(1);
                 wordbookSelect.appendChild(option);
             }
         }

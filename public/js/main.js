@@ -4,6 +4,7 @@ const word_input = document.getElementById('wordInput')
 const chapter_input = document.getElementById('chapterInput')
 const categories = document.querySelectorAll('.select-cat div')
 
+const addword_btn = document.querySelector('.submit')
 const wordtest_btn = document.querySelector('.wordtest')
 
 let cur_category
@@ -17,25 +18,34 @@ categories.forEach(div => {
     })
 })
 
-window.onkeydown = (e) => {
+function add_word() {
     const word = word_input.value;
     const chapter = chapter_input.value
-    const code = e.code;
 
-    if(code === "Enter"){
-        if (chapter != "" && word != "") {
-            // create5exs(word)
-            insertWord(cur_category, chapter, word, '테스트', '1', '2', '3', '4','5')
-            alert(`Successfully added the word '${word}' in chapter ${chapter}`)
-            word_input.value = ""
-            chapter_input.value = ""
-        } else if (chapter == "") {
-            alert('Please select a chapter.')
-        } else if (word == "") {
-            alert('Please write a word.')
-        }
+    if (chapter != "" && word != "") {
+        // create5exs(word)
+        insertWord(cur_category, chapter, word, '1', '2', '3', '4','5')
+        alert(`Successfully added the word '${word}' in chapter ${chapter}`)
+        word_input.value = ""
+        chapter_input.value = ""
+    } else if (chapter == "") {
+        alert('Please select a chapter.')
+    } else if (word == "") {
+        alert('Please write a word.')
     }
 }
+
+window.onkeydown = (e) => {
+    const code = e.code;
+
+    if (code === 'Enter') {
+        add_word()
+    }
+}
+
+addword_btn.addEventListener('click', function() {
+    add_word()
+})
 
 wordtest_btn.addEventListener('click', function() {
     window.open('../wordtest.html', '_self')
@@ -68,7 +78,7 @@ async function create5exs(word) {
             },
             {
                 role: 'user',
-                content: `First, do not provide any additional information. Second, comply with the following form: "applauded : The audience applauded. | 관객들이 박수쳤다." Keeping these rules, please provide 5 example sentences using the word: "${word}".`
+                content: `First, do not provide additional information. Second, comply with the following form: "applauded:The audience applauded.|관객들이 박수쳤다." Keeping these rules, provide 5 example sentences using the word: "${word}".`
             }
         ]
         })

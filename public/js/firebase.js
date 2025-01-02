@@ -19,9 +19,9 @@ const app = initializeApp(firebaseConfig);
 const db =  getDatabase(app);
 const dbRef = ref(db);
 
-export function insertWord(category, chapter, word, meaning, ex1, ex2, ex3, ex4, ex5) {
+export function insertWord(category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
     set(ref(db, `${category}/${chapter}/${word}`), {
-        word, meaning, ex1, ex2, ex3, ex4, ex5
+        word, ex1, ex2, ex3, ex4, ex5
     });
 }
 
@@ -45,9 +45,20 @@ export function loadFirebaseData() {
                         firebaseData[wordbook][chapter] = [];
                         for (const wordKey in rawData[wordbook][chapter]) {
                             const wordData = rawData[wordbook][chapter][wordKey];
+                            const exampleSentences = [wordData.ex1, wordData.ex2, wordData.ex3, wordData.ex4, wordData.ex5].filter(Boolean);
+                            
+                            // Create an array of example pairs (english, korean)
+                            const examples = exampleSentences.map(example => {
+                                const [english, korean] = example.split('|');
+                                const maskedEnglish = english.replace(new RegExp(`\\b${wordData.word}\\b`, 'gi'), (match) => {
+                                    return match[0] + '_'.repeat(match.length - 1);
+                                });
+                                return { english: maskedEnglish, korean };
+                            });
+
                             firebaseData[wordbook][chapter].push({
-                                english: wordData.ex1,
-                                korean: `<strong>${wordData.meaning}</strong>`,
+                                examples: examples,
+                                korean: `<strong>${wordData.word}</strong>`,
                                 word: wordData.word
                             });
                         }
@@ -61,6 +72,8 @@ export function loadFirebaseData() {
         }).catch(reject);
     });
 }
+
+
 
 export async function getAPIKEY() {
     const snapshot = await get(child(dbRef, 'openai/apikey'))
