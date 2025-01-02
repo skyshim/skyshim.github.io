@@ -2,8 +2,35 @@ h1 {
     text-align: center;
 }
 
-.container {
+.select-cat {
     display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.select-cat div {
+    margin: 15px;
+    width: 200px;
+    height: 60px;
+    text-align: center;
+    line-height: 60px;
+    background-color: lightblue;
+    color:#333;
+    border: 2px solid;
+    border-radius: 3px;
+    border-color: #aaa;
+    font-size: 25px;
+}
+
+.select-cat div.selected {
+    background-color: rgb(153, 245, 245);
+}
+
+.container {
+    margin: 0 auto;
+    display: flex;
+    width: 50vw;
+    text-align: center;
     justify-content: center;
     align-items: center;
 }

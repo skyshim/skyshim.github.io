@@ -1,6 +1,40 @@
-import * as db from "./firebase.js";
+import { OPENAI_API_KEY, insertWord, getWord } from "./firebase.js";
 
-const OPENAI_API_KEY = db.getAPIKEY()
+const word_input = document.getElementById('wordInput')
+const chapter_input = document.getElementById('chapterInput')
+const categories = document.querySelectorAll('.select-cat div')
+
+let cur_category
+
+categories.forEach(div => {
+    div.addEventListener("click", function() {
+        categories.forEach(d => d.classList.remove("selected"))
+        this.classList.add("selected")
+        cur_category = div.id
+        console.log(cur_category)
+    })
+})
+
+window.onkeydown = (e) => {
+    const word = word_input.value;
+    const chapter = chapter_input.value
+    const code = e.code;
+
+    if(code === "Enter"){
+        if (chapter != "" && word != "") {
+            // create5exs(word)
+            insertWord(cur_category, chapter, word, '테스트', '1', '2', '3', '4','5')
+            alert(`Successfully added the word '${word}' in chapter ${chapter}`)
+            word_input.value = ""
+            chapter_input.value = ""
+        } else if (chapter == "") {
+            alert('Please select a chapter.')
+        } else if (word == "") {
+            alert('Please write a word.')
+        }
+    }
+}
+
 
 async function create5exs(word) {
     const examples5 = document.getElementById('examples5');
@@ -52,15 +86,5 @@ async function create5exs(word) {
     } catch (error) {
         console.error(error);
         alert('Error: Unable to connect to the API.');
-    }
-}
-
-function word(e){
-    const word = document.getElementById('wordInput').value;
-    const code = e.code;
-
-    if(code == "Enter"){
-        // create5exs(word)
-        db.insertWord('ReadingPower', 1, 'test', '테스트', '1', '2', '3', '4','5')
     }
 }

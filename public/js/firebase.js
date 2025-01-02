@@ -2,7 +2,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getDatabase , ref, set , child, get} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-
 // Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDH-MVLAHcVqpcsi5R3hRSE0BIqDkjqYW0",
@@ -18,6 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db =  getDatabase(app);
+const dbRef = ref(db);
 
 export function insertWord(category, chapter, word, meaning, ex1, ex2, ex3, ex4, ex5) {
     set(ref(db, category + '/' + chapter + '/' + word), {
@@ -32,7 +32,7 @@ export function insertWord(category, chapter, word, meaning, ex1, ex2, ex3, ex4,
 }
 
 export function getWord(category, chapter) {
-    get(child(ref(db), `${userId}/${chapter}`)).then((snapshot) => {
+    get(child(dbRef, `${category}/${chapter}`)).then((snapshot) => {
         if (snapshot.exists()) {
             console.log(snapshot.val());
         } else {
@@ -43,8 +43,11 @@ export function getWord(category, chapter) {
     })
 }
 
-export function getAPIKEY() {
-    get('openai').then((snapshot) => {
-        return snapshot
-    })
+async function getAPIKEY() {
+    const snapshot = await get(child(dbRef, 'openai/apikey'))
+    if (snapshot.exists) {
+        return snapshot.val();
+    }
 }
+
+export const OPENAI_API_KEY = await getAPIKEY();

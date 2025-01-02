@@ -9,9 +9,20 @@
 </head>
 <body>
     <h1>⭐스시스심의 영단어 학습⭐</h1>
+
+
+    <div class="select-chapter">
+        
+    </div>
+
     <div class="container">
         <div class="word-in">
-            <input type="text" id="wordInput" placeholder="새 단어 입력..." onkeypress="word(event)">
+            <div class="select-cat">
+                <div id="neugryeul-voca">능률VOCA</div>
+                <div id="godanggeut">고단끝</div>
+            </div>
+            <input type="text" id="chapterInput" placeholder="DAY 입력...">
+            <input type="text" id="wordInput" placeholder="새 단어 입력...">
         </div>
         <div class="examples5" id="examples5"></div>
     </div>
@@ -19,7 +30,7 @@
 
 
 
-    <script src="/public/js/main.js"></script>
-    <script src="/public/js/firebase.js"></script>
+    <script type="module" src="/public/js/main.js"></script>
+    <script type="module" src="/public/js/firebase.js"></script>
 </body>
 </html>
