@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .quiz-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .question, .hint, .input-container, .result {
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        #chapter-container {
+            margin-top: 10px;
+        }
+        #chapters {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            margin: 10px 0px 0px 0px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>단어 테스트</h1>
+        <div id="category-selection">
+            <select id="wordbook" onchange="populateChapters()">
+                <option value="">단어장 선택...</option>
+            </select>
+            <div id="chapter-container">
+                <select id="chapters" multiple size="10"></select>
+            </div>
+            <button onclick="startQuiz()" disabled id="start-button">Start Quiz</button>
+        </div>
+        <div id="quiz-section" class="hidden">
+            <div class="question">
+                <p id="english-sentence"></p>
+            </div>
+            <div class="hint">
+                <p id="korean-hint"></p>
+            </div>
+            <div class="input-container">
+                <form id="quiz-form" onsubmit="return handleSubmit(event)">
+                    <input type="text" id="answer" placeholder="Type your answer here">
+                    <button type="submit">Submit</button>
+                </form>
+                <button id="pass-button" onclick="passWord()">Pass</button>
+            </div>
+            <div class="result hidden" id="result"></div>
+        </div>
+        <button onclick="goBack()">Go to Home</button>
+    </div>
+
+    <script type="module">
+        import { loadFirebaseData } from "/public/js/firebase.js";
+        
+        // Declare global variables
+        let data = {};
+        let selectedData = [];
+        let currentIndex = 0;
+        let failedAttempts = 0;
+
+        // Make functions globally available
+        window.populateChapters = function() {
+            const wordbook = document.getElementById('wordbook').value;
+            const chaptersSelect = document.getElementById('chapters');
+            
+            chaptersSelect.innerHTML = "";
+            
+            if (wordbook) {
+                const chapters = Object.keys(data[wordbook]);
+                chapters.forEach(chapter => {
+                    const option = document.createElement('option');
+                    option.value = chapter;
+                    option.textContent = chapter.charAt(0).toUpperCase() + chapter.slice(1);
+                    chaptersSelect.appendChild(option);
+                });
+            }
+            
+            document.getElementById('start-button').disabled = true;
+        };
+
+        window.startQuiz = function() {
+            const wordbook = document.getElementById('wordbook').value;
+            const selectedChapters = Array.from(document.getElementById('chapters').selectedOptions)
+                .map(option => option.value);
+
+            if (wordbook && selectedChapters.length > 0) {
+                selectedData = selectedChapters.reduce((acc, chapter) => {
+                    return acc.concat(data[wordbook][chapter]);
+                }, []);
+
+                currentIndex = 0;
+                failedAttempts = 0;
+                document.getElementById('category-selection').classList.add('hidden');
+                document.getElementById('quiz-section').classList.remove('hidden');
+                loadQuestion();
+            }
+        };
+
+        window.handleSubmit = function(event) {
+            event.preventDefault();
+            checkAnswer();
+            return false;
+        };
+
+        window.passWord = function() {
+            currentIndex++;
+            loadQuestion();
+        };
+
+        function loadQuestion() {
+            if (currentIndex < selectedData.length) {
+                document.getElementById('english-sentence').innerHTML = selectedData[currentIndex].english;
+                document.getElementById('korean-hint').innerHTML = selectedData[currentIndex].korean;
+                document.getElementById('answer').value = "";
+                document.getElementById('result').classList.add('hidden');
+                failedAttempts = 0;
+            } else {
+                document.getElementById('quiz-section').classList.add('hidden');
+                document.getElementById('category-selection').classList.remove('hidden');
+                alert('Congratulations! You have completed the quiz!');
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById('answer').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            if (userAnswer.toLowerCase() === selectedData[currentIndex].word.toLowerCase()) {
+                resultDiv.textContent = "Correct!";
+                resultDiv.style.color = "green";
+                currentIndex++;
+                setTimeout(loadQuestion, 1000);
+            } else {
+                failedAttempts++;
+                resultDiv.textContent = `Wrong! ${3 - failedAttempts} attempts left`;
+                resultDiv.style.color = "red";
+
+                if (failedAttempts >= 3) {
+                    passWord();
+                }
+            }
+
+            resultDiv.classList.remove('hidden');
+        }
+
+        async function initializeData() {
+            data = await loadFirebaseData();
+            const wordbookSelect = document.getElementById('wordbook');
+            wordbookSelect.innerHTML = "<option value=''>단어장 선택...</option>";
+
+            for (let wordbook in data) {
+                const option = document.createElement('option');
+                option.value = wordbook;
+                option.textContent = wordbook.charAt(0).toUpperCase() + wordbook.slice(1);
+                wordbookSelect.appendChild(option);
+            }
+        }
+
+        window.goBack = function() {
+            window.location.href = "index.html";
+        };
+
+        document.getElementById('chapters').addEventListener('change', () => {
+            const selectedChapters = Array.from(document.getElementById('chapters').selectedOptions);
+            document.getElementById('start-button').disabled = selectedChapters.length === 0;
+        });
+
+        initializeData();
+    </script>
+</body>
+</html>

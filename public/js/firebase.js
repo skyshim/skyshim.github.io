@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase , ref, set , child, get} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase , ref, set , child, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,30 +20,49 @@ const db =  getDatabase(app);
 const dbRef = ref(db);
 
 export function insertWord(category, chapter, word, meaning, ex1, ex2, ex3, ex4, ex5) {
-    set(ref(db, category + '/' + chapter + '/' + word), {
-        word: word,
-        meaning: meaning,
-        ex1: ex1,
-        ex2: ex2,
-        ex3: ex3,
-        ex4: ex4,
-        ex5: ex5
+    set(ref(db, `${category}/${chapter}/${word}`), {
+        word, meaning, ex1, ex2, ex3, ex4, ex5
     });
 }
 
-export function getWord(category, chapter) {
-    get(child(dbRef, `${category}/${chapter}`)).then((snapshot) => {
-        if (snapshot.exists()) {
-            console.log(snapshot.val());
-        } else {
-            console.log("No data available");
-        }
-    }).catch((error) => {
-        console.error(error);
-    })
+export function loadFirebaseData() {
+    return new Promise((resolve, reject) => {
+        get(dbRef).then((snapshot) => {
+            try {
+                if (!snapshot.exists()) {
+                    reject(new Error('No data available'));
+                    return;
+                }
+
+                const rawData = snapshot.val();
+                const firebaseData = {};
+
+                for (const wordbook in rawData) {
+                    if (wordbook === 'openai') continue; // Skip openai data
+                    
+                    firebaseData[wordbook] = {};
+                    for (const chapter in rawData[wordbook]) {
+                        firebaseData[wordbook][chapter] = [];
+                        for (const wordKey in rawData[wordbook][chapter]) {
+                            const wordData = rawData[wordbook][chapter][wordKey];
+                            firebaseData[wordbook][chapter].push({
+                                english: wordData.ex1,
+                                korean: `<strong>${wordData.meaning}</strong>`,
+                                word: wordData.word
+                            });
+                        }
+                    }
+                }
+                
+                resolve(firebaseData);
+            } catch (error) {
+                reject(error);
+            }
+        }).catch(reject);
+    });
 }
 
-async function getAPIKEY() {
+export async function getAPIKEY() {
     const snapshot = await get(child(dbRef, 'openai/apikey'))
     if (snapshot.exists) {
         return snapshot.val();

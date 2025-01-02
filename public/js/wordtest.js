@@ -1,0 +1,1 @@
+import { insertWord, getWord } from "./firebase.js"

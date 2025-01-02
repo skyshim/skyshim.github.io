@@ -1,8 +1,10 @@
-import { OPENAI_API_KEY, insertWord, getWord } from "./firebase.js";
+import { OPENAI_API_KEY, insertWord} from "./firebase.js"
 
 const word_input = document.getElementById('wordInput')
 const chapter_input = document.getElementById('chapterInput')
 const categories = document.querySelectorAll('.select-cat div')
+
+const wordtest_btn = document.querySelector('.wordtest')
 
 let cur_category
 
@@ -35,14 +37,18 @@ window.onkeydown = (e) => {
     }
 }
 
+wordtest_btn.addEventListener('click', function() {
+    window.open('../wordtest.html', '_self')
+})
+
 
 async function create5exs(word) {
-    const examples5 = document.getElementById('examples5');
+    const examples5 = document.getElementById('examples5')
 
-    examples5.innerHTML = '';
+    examples5.innerHTML = ''
     
     if (!word) {
-        alert('Please enter a word!');
+        alert('Please enter a word!')
         return;
     }
     
