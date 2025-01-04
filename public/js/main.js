@@ -89,7 +89,6 @@ wordtest_btn.addEventListener('click', function() {
 
 async function create5exs(word) {
     const examples5 = document.getElementById('examples5')
-    console.log(OPENAI_API_KEY)
 
     examples.splice(0) //examples 초기화
     examples5.innerHTML = ''
