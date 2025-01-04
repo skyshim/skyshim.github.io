@@ -99,43 +99,33 @@ async function create5exs(word) {
     }
     
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`, // Replace YOUR_API_KEY with your actual API key
-        },
-        body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [
-            {
-                role: 'system',
-                content: 'You are an assistant that provides English example sentences.'
+        const response = await fetch('https://skyshim-github-io.onrender.com/api/openai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
-            {
-                role: 'user',
-                content: `Comply with the following form: "The audience applauded.|관객들이 박수쳤다." provide 5 example sentences using the word: "${word}".`
-            }
-        ]
-        })
-    });
-    
-    const data = await response.json();
-    
-    if (response.ok) {
-        const examples = data.choices[0].message.content;
-        const examplesList = examples.split('\n').filter(line => line.trim());
-    
-        examplesList.forEach(example => {
-            examples.push(example);
-            const p = document.createElement('p');
-            p.textContent = example.split('|')[0];
-            examples5.appendChild(p);
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    { role: 'system', content: 'You are an assistant that provides English example sentences.' },
+                    { role: 'user', content: `Provide 5 example sentences using the word: "${word}".` },
+                ],
+            }),
         });
-    } else {
-        console.error(data);
-        alert('Error: Could not generate examples. Check the console for details.');
-    }
+
+        const data = await response.json();
+
+        if (response.ok) {
+            const examples = data.choices[0].message.content.split('\n').filter(line => line.trim());
+            examples.forEach(example => {
+                const p = document.createElement('p');
+                p.textContent = example;
+                examples5.appendChild(p);
+            });
+        } else {
+            console.error(data);
+            alert('Error: Could not generate examples. Check the console for details.');
+        }
     } catch (error) {
         console.error(error);
         alert('Error: Unable to connect to the API.');
