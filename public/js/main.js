@@ -9,7 +9,7 @@ const wordtest_btn = document.querySelector('.wordtest')
 const deleteword_btn = document.querySelector('.delete');
 
 let cur_category
-let examples = []
+const examples = []
 
 categories.forEach(div => {
     div.addEventListener("click", function() {
@@ -26,21 +26,23 @@ async function add_word() {
 
     if (chapter != "" && word != "") {
         create5exs(word)
-        const ex1 = examples[0]
-        const ex2 = examples[1]
-        const ex3 = examples[2]
-        const ex4 = examples[3]
-        const ex5 = examples[4]
-        console.log(examples)
-
-        insertWord(cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5)
-        // insertWord(cur_category, chapter, word, '1', '2', '3', '4', '5')
-
-        const wordCount = await getWordCount(cur_category, chapter);
-        alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`)
-
-        word_input.value = ""
-        chapter_input.value = ""
+        setTimeout(async function() {
+            // const ex1 = examples[0]
+            // const ex2 = examples[1]
+            // const ex3 = examples[2]
+            // const ex4 = examples[3]
+            // const ex5 = examples[4]
+            console.log(examples)
+    
+            // insertWord(cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5)
+            insertWord(cur_category, chapter, word, '1', '2', '3', '4', '5')
+    
+            const wordCount = await getWordCount(cur_category, chapter);
+            alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`)
+    
+            word_input.value = ""
+            chapter_input.value = ""
+        }, 4000);
     } else if (chapter == "") {
         alert('Please select a chapter.')
     } else if (word == "") {
@@ -87,8 +89,9 @@ wordtest_btn.addEventListener('click', function() {
 
 async function create5exs(word) {
     const examples5 = document.getElementById('examples5')
+    console.log(OPENAI_API_KEY)
 
-    examples = []
+    examples.splice(0) //examples 초기화
     examples5.innerHTML = ''
     
     if (!word) {
@@ -112,7 +115,7 @@ async function create5exs(word) {
             },
             {
                 role: 'user',
-                content: `First, do not provide additional information. Second, comply with the following form: "The audience applauded.|관객들이 박수쳤다." Keeping these rules, provide 5 example sentences using the word: "${word}".`
+                content: `Comply with the following form: "The audience applauded.|관객들이 박수쳤다." provide 5 example sentences using the word: "${word}".`
             }
         ]
         })
@@ -125,9 +128,9 @@ async function create5exs(word) {
         const examplesList = examples.split('\n').filter(line => line.trim());
     
         examplesList.forEach(example => {
-            examples.push(example)
+            examples.push(example);
             const p = document.createElement('p');
-            p.textContent = example;
+            p.textContent = example.split('|')[0];
             examples5.appendChild(p);
         });
     } else {
