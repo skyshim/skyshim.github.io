@@ -44,6 +44,8 @@ app.post('/api/openai', async (req, res) => {
             messages,
         });
 
+        console.log('OpenAI API 응답:', response.data); // 응답 로그 추가
+
         res.json(response.data);
     } catch (error) {
         console.error(error);
