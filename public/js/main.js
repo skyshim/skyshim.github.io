@@ -44,6 +44,7 @@ async function add_word() {
             alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`)
             
             cur_category = ""
+            categories.forEach(d => d.classList.remove("selected"))
             word_input.value = ""
             chapter_input.value = ""
         }, 4000);
@@ -68,6 +69,7 @@ deleteword_btn.addEventListener('click', async () => {
             alert(`Successfully deleted the word '${word}' from chapter ${chapter}.`);
 
             cur_category = "";
+            categories.forEach(d => d.classList.remove("selected"))
             word_input.value = "";
             chapter_input.value = "";
         }
