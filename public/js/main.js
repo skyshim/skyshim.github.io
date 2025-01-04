@@ -8,8 +8,8 @@ const addword_btn = document.querySelector('.submit')
 const wordtest_btn = document.querySelector('.wordtest')
 const deleteword_btn = document.querySelector('.delete');
 
-let cur_category
-const examples = ""
+let cur_category  = ""
+const examples = []
 
 console.log(cur_category)
 
