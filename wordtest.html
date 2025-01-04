@@ -17,6 +17,20 @@
         .question, .hint, .input-container, .result {
             margin-bottom: 20px;
         }
+        #english-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 100%;
+        } 
+        #progress { 
+            margin-right: 10px; /* Space between progress and the sentence */ 
+            font-weight: bold; 
+            color: #007bff; /* Customize the color as needed */ 
+        }
+        #english-sentence {
+            text-align: center;
+        }
         .hidden {
             display: none;
         }
@@ -73,7 +87,10 @@
         </div>
         <div id="quiz-section" class="hidden">
             <div class="question">
-                <p id="english-sentence"></p>
+                <div id="english-container"> 
+                    <p id="progress"></p>
+                    <p id="english-sentence"></p>
+                </div>
             </div>
             <div class="hint">
                 <p id="korean-hint"></p>
@@ -98,6 +115,7 @@
         const customNames = {
             "godanggeut": "고단끝",
             "neugryeul-voca": "능률VOCA",
+            "custom" : "커스텀단어장"
             // Add more mappings as needed
         };
 
@@ -173,6 +191,7 @@
                 const examples = selectedData[currentIndex].examples;
                 const randomExample = examples[Math.floor(Math.random() * examples.length)];
             
+                document.getElementById('progress').innerHTML = `(${currentIndex + 1}/${selectedData.length})`;
                 document.getElementById('english-sentence').innerHTML = randomExample.english;
                 document.getElementById('korean-hint').innerHTML = randomExample.korean;
                 document.getElementById('answer').value = "";
@@ -184,6 +203,7 @@
                 alert('Congratulations! You have completed the quiz!');
             }
         }
+
 
 
         function checkAnswer() {

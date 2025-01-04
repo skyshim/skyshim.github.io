@@ -6,11 +6,12 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
+    /* flex-flow: row wrap; */
 }
 
 .select-cat div {
     margin: 15px;
-    width: 150px;
+    width: 140px;
     height: 60px;
     text-align: center;
     line-height: 60px;
@@ -18,7 +19,7 @@ h1 {
     color:#333;
     /* border: 2px solid #aaa; */
     border-radius: 3px;
-    font-size: 25px;
+    font-size: 22px;
 }
 
 .select-cat div:hover {
@@ -45,11 +46,15 @@ h1 {
     align-items: center;
 }
 
+.word-in {
+    width: 100%
+}
+
 input {
     margin: 10px;
     padding: 10px;
     width: 90%;
-    font-size: 32px;
+    font-size: 24px;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
@@ -77,6 +82,15 @@ input::placeholder {
     background-color: rgb(126, 248, 126);
 }
 
+.delete {
+    background-color: crimson;
+}
+
+.delete:hover {
+    transform: scale(1.02);
+    background-color: rgb(231, 7, 52);
+}
+
 .wordtest {
     background-color: rgb(245, 234, 79);
 }
@@ -84,4 +98,24 @@ input::placeholder {
 .wordtest:hover {
     transform: scale(1.02);
     background-color: rgb(255, 244, 90);
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 95vw
+    }
+
+    .select-cat div {
+        width: 90px; /* 더 작은 화면에서 크기 조정 */
+        height: 40px;
+        font-size: 14px;
+        line-height: 40px;
+    }
+
+    .bottom-btn div {
+        width: 150px;
+        height: 70px;
+        line-height: 70px;
+        font-size: 18px;
+    }
 }

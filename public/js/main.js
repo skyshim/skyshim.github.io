@@ -1,4 +1,4 @@
-import { OPENAI_API_KEY, insertWord} from "./firebase.js"
+import { OPENAI_API_KEY, insertWord, getWordCount, deleteWord } from "./firebase.js";
 
 const word_input = document.getElementById('wordInput')
 const chapter_input = document.getElementById('chapterInput')
@@ -6,8 +6,10 @@ const categories = document.querySelectorAll('.select-cat div')
 
 const addword_btn = document.querySelector('.submit')
 const wordtest_btn = document.querySelector('.wordtest')
+const deleteword_btn = document.querySelector('.delete');
 
 let cur_category
+let examples = []
 
 categories.forEach(div => {
     div.addEventListener("click", function() {
@@ -18,14 +20,25 @@ categories.forEach(div => {
     })
 })
 
-function add_word() {
+async function add_word() {
     const word = word_input.value;
     const chapter = chapter_input.value
 
     if (chapter != "" && word != "") {
-        // create5exs(word)
-        insertWord(cur_category, chapter, word, '1', '2', '3', '4','5')
-        alert(`Successfully added the word '${word}' in chapter ${chapter}`)
+        create5exs(word)
+        const ex1 = examples[0]
+        const ex2 = examples[1]
+        const ex3 = examples[2]
+        const ex4 = examples[3]
+        const ex5 = examples[4]
+        console.log(examples)
+
+        insertWord(cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5)
+        // insertWord(cur_category, chapter, word, '1', '2', '3', '4', '5')
+
+        const wordCount = await getWordCount(cur_category, chapter);
+        alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`)
+
         word_input.value = ""
         chapter_input.value = ""
     } else if (chapter == "") {
@@ -34,6 +47,26 @@ function add_word() {
         alert('Please write a word.')
     }
 }
+
+// 단어 삭제 버튼 이벤트 추가
+deleteword_btn.addEventListener('click', async () => {
+    const word = word_input.value;
+    const chapter = chapter_input.value;
+
+    if (chapter !== "" && word !== "") {
+        const confirmDelete = confirm(`Are you sure you want to delete the word '${word}' from chapter ${chapter}?`);
+        if (confirmDelete) {
+            await deleteWord(cur_category, chapter, word);
+            alert(`Successfully deleted the word '${word}' from chapter ${chapter}.`);
+            word_input.value = "";
+            chapter_input.value = "";
+        }
+    } else if (chapter === "") {
+        alert('Please select a chapter.');
+    } else if (word === "") {
+        alert('Please write a word.');
+    }
+});
 
 window.onkeydown = (e) => {
     const code = e.code;
@@ -55,6 +88,7 @@ wordtest_btn.addEventListener('click', function() {
 async function create5exs(word) {
     const examples5 = document.getElementById('examples5')
 
+    examples = []
     examples5.innerHTML = ''
     
     if (!word) {
@@ -78,7 +112,7 @@ async function create5exs(word) {
             },
             {
                 role: 'user',
-                content: `First, do not provide additional information. Second, comply with the following form: "applauded:The audience applauded.|관객들이 박수쳤다." Keeping these rules, provide 5 example sentences using the word: "${word}".`
+                content: `First, do not provide additional information. Second, comply with the following form: "The audience applauded.|관객들이 박수쳤다." Keeping these rules, provide 5 example sentences using the word: "${word}".`
             }
         ]
         })
@@ -91,6 +125,7 @@ async function create5exs(word) {
         const examplesList = examples.split('\n').filter(line => line.trim());
     
         examplesList.forEach(example => {
+            examples.push(example)
             const p = document.createElement('p');
             p.textContent = example;
             examples5.appendChild(p);

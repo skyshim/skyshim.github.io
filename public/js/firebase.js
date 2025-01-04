@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase , ref, set , child, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase , ref, set , child, get, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -23,6 +23,23 @@ export function insertWord(category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
     set(ref(db, `${category}/${chapter}/${word}`), {
         word, ex1, ex2, ex3, ex4, ex5
     });
+}
+
+// 단어 수를 가져오는 함수
+export async function getWordCount(category, chapter) {
+    const chapterRef = child(dbRef, `${category}/${chapter}`);
+    const snapshot = await get(chapterRef);
+    if (snapshot.exists()) {
+        return Object.keys(snapshot.val()).length;
+    } else {
+        return 0;
+    }
+}
+
+// 단어 삭제 함수
+export async function deleteWord(category, chapter, word) {
+    const wordRef = ref(db, `${category}/${chapter}/${word}`);
+    await remove(wordRef);
 }
 
 export function loadFirebaseData() {
