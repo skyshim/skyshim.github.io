@@ -1,6 +1,6 @@
 const express = require('express');
 const { Configuration, OpenAIApi } = require('openai');
-const { getAPIKEY } = require('./firebase-config'); // Firebase 설정 가져오기
+const { getAPIKEY } = require('./js/firebase-config'); // Firebase 설정 가져오기
 require('dotenv').config();
 
 const app = express();
