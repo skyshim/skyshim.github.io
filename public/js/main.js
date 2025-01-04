@@ -117,8 +117,8 @@ async function create5exs(word) {
         const data = await response.json();
 
         if (response.ok) {
-            const examples5 = data.choices[0].message.content.split('\n').filter(line => line.trim());
-            examples5.forEach(example => {
+            const examplesList = data.choices[0].message.content.split('\n').filter(line => line.trim());
+            examplesList.forEach(example => {
                 examples.push(example);
                 const p = document.createElement('p');
                 p.textContent = example;
