@@ -84,7 +84,7 @@ addword_btn.addEventListener('click', function() {
 })
 
 wordtest_btn.addEventListener('click', function() {
-    window.open('../wordtest.html', '_self')
+    window.open('../wordtest', '_self')
 })
 
 
