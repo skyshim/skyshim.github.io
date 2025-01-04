@@ -26,7 +26,7 @@ async function add_word() {
     const word = word_input.value;
     const chapter = chapter_input.value
 
-    if (chapter != "" && word != "") {
+    if (cur_category !== "" && chapter !== "" && word !== "") {
         examples.splice(0);
         create5exs(word)
         setTimeout(async function() {
@@ -42,13 +42,16 @@ async function add_word() {
     
             const wordCount = await getWordCount(cur_category, chapter);
             alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`)
-    
+            
+            cur_category = ""
             word_input.value = ""
             chapter_input.value = ""
         }, 4000);
-    } else if (chapter == "") {
+    } else if (cur_category === "") {
+        alert('Please select a wordbook.')
+    } else if (chapter === "") {
         alert('Please select a chapter.')
-    } else if (word == "") {
+    } else if (word === "") {
         alert('Please write a word.')
     }
 }
@@ -63,14 +66,15 @@ deleteword_btn.addEventListener('click', async () => {
         if (confirmDelete) {
             await deleteWord(cur_category, chapter, word);
             alert(`Successfully deleted the word '${word}' from chapter ${chapter}.`);
+
             cur_category = "";
             word_input.value = "";
             chapter_input.value = "";
         }
     } else if (cur_category === "") {
-        alert('Please select a book.');
+        alert('Please select a wordbook.');
     } else if (chapter === "") {
-        alert('Please select a chapter.');
+        alert('Please select a chapter.')
     } else if (word === "") {
         alert('Please write a word.');
     }
