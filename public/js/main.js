@@ -109,7 +109,7 @@ async function create5exs(word) {
                 model: 'gpt-3.5-turbo',
                 messages: [
                     { role: 'system', content: 'You are an assistant that provides English example sentences.' },
-                    { role: 'user', content: `Comply with the following form: "The audience applauded.|관객들이 박수쳤다." provide 5 example sentences using the word: "${word}", without index.`},
+                    { role: 'user', content: `Comply with the following form: "The audience applauded.|관객들이 박수쳤다." provide 5 example sentences and korean meanings using the word: "${word}", without index.`},
                 ],
             }),
         });
