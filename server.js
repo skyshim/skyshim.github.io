@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { getAPIKEY } = require('./public/js/firebase-config'); // Firebase 설정
-const { Configuration, OpenAIApi } = require('openai');
+const { OpenAI } = require('openai');
 require('dotenv').config();
 
 const app = express();
@@ -29,27 +29,28 @@ app.use(express.json());
 
 app.post('/api/openai', async (req, res) => {
     try {
-        const apiKey = await getAPIKEY(); // Firebase에서 API 키 가져오기
+        const apiKey = await getAPIKEY();  // Firebase에서 API 키를 가져옴
 
-        const openai = new OpenAIApi(
-            new Configuration({
-                apiKey, // 동적으로 가져온 API 키
-            })
-        );
+        // OpenAI 인스턴스 생성 (openai 4.x.x에서는 Configuration과 OpenAIApi 대신 OpenAI 사용)
+        const openai = new OpenAI({
+            apiKey, // Firebase에서 가져온 API 키
+        });
 
         const { model, messages } = req.body;
 
-        const response = await openai.createChatCompletion({
-            model: model || 'gpt-3.5-turbo',
+        // OpenAI API 호출
+        const response = await openai.chat.completions.create({
+            model: model || 'gpt-3.5-turbo',  // 기본 모델 설정
             messages,
         });
 
-        console.log('OpenAI API 응답:', response.data); // 응답 로그 추가
+        console.log('OpenAI API 응답:', response); // 응답 로그 추가
 
-        res.json(response.data);
+        // 응답 반환
+        res.json(response);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error communicating with OpenAI API or Firebase' });
+        console.error("서버 오류:", error);  // 서버 내부 오류 출력
+        res.status(500).json({ error: 'Error communicating with OpenAI API', message: error.message });
     }
 });
 
