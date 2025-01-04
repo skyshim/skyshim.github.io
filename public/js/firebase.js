@@ -89,14 +89,3 @@ export function loadFirebaseData() {
         }).catch(reject);
     });
 }
-
-
-
-export async function getAPIKEY() {
-    const snapshot = await get(child(dbRef, 'openai/apikey'))
-    if (snapshot.exists) {
-        return snapshot.val();
-    }
-}
-
-export const OPENAI_API_KEY = await getAPIKEY();

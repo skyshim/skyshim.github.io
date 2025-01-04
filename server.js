@@ -1,18 +1,27 @@
 const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const { getAPIKEY } = require('./firebase-config'); // Firebase 설정
 const { Configuration, OpenAIApi } = require('openai');
-const { getAPIKEY } = require('./public/js/firebase-config'); // Firebase 설정 가져오기
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS 설정 (모든 도메인에서 요청 허용)
+app.use(cors());
+
 // 정적 파일 제공
-const path = require('path');
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // 기본 HTML 제공
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// wordtest.html 제공
+app.get('/wordtest', (req, res) => {
+    res.sendFile(path.join(__dirname, 'wordtest.html'));
 });
 
 // OpenAI API 프록시
@@ -44,5 +53,5 @@ app.post('/api/openai', async (req, res) => {
 
 // 서버 시작
 app.listen(PORT, () => {
-    console.log(`Server is running on https://skyshim-github-io.onrender.com:${PORT}`);
+    console.log(`Server is running on http://https://skyshim-github-io.onrender.com/:${PORT}`);
 });

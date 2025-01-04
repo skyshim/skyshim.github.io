@@ -1,4 +1,4 @@
-import { OPENAI_API_KEY, insertWord, getWordCount, deleteWord } from "./firebase.js";
+import { insertWord, getWordCount, deleteWord } from "./firebase.js";
 
 const word_input = document.getElementById('wordInput')
 const chapter_input = document.getElementById('chapterInput')
