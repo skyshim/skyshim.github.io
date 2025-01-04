@@ -11,6 +11,8 @@ const deleteword_btn = document.querySelector('.delete');
 let cur_category
 const examples = []
 
+console.log(cur_category)
+
 categories.forEach(div => {
     div.addEventListener("click", function() {
         categories.forEach(d => d.classList.remove("selected"))
@@ -56,7 +58,7 @@ deleteword_btn.addEventListener('click', async () => {
     const word = word_input.value;
     const chapter = chapter_input.value;
 
-    if (chapter !== "" && word !== "") {
+    if (cur_category != undefined && chapter !== "" && word !== "") {
         const confirmDelete = confirm(`Are you sure you want to delete the word '${word}' from chapter ${chapter}?`);
         if (confirmDelete) {
             await deleteWord(cur_category, chapter, word);
