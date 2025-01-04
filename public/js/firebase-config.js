@@ -18,7 +18,7 @@ const database = getDatabase(firebaseApp);
 
 // API 키를 가져오는 함수
 async function getAPIKEY() {
-    const apiKeyRef = ref(database, "keys/openai-api-key"); // Firebase Realtime Database 경로
+    const apiKeyRef = ref(database, "openai/apikey"); // Firebase Realtime Database 경로
     const snapshot = await get(apiKeyRef);
 
     if (snapshot.exists()) {

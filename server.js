@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { getAPIKEY } = require('./firebase-config'); // Firebase 설정
+const { getAPIKEY } = require('./public/js/firebase-config'); // Firebase 설정
 const { Configuration, OpenAIApi } = require('openai');
 require('dotenv').config();
 
@@ -53,5 +53,5 @@ app.post('/api/openai', async (req, res) => {
 
 // 서버 시작
 app.listen(PORT, () => {
-    console.log(`Server is running on http://https://skyshim-github-io.onrender.com/:${PORT}`);
+    console.log(`Server is running on https://skyshim-github-io.onrender.com/:${PORT}`);
 });
