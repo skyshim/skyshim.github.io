@@ -25,17 +25,18 @@ async function add_word() {
     const chapter = chapter_input.value
 
     if (chapter != "" && word != "") {
+        examples.splice(0);
         create5exs(word)
         setTimeout(async function() {
-            // const ex1 = examples[0]
-            // const ex2 = examples[1]
-            // const ex3 = examples[2]
-            // const ex4 = examples[3]
-            // const ex5 = examples[4]
+            const ex1 = examples[0]
+            const ex2 = examples[1]
+            const ex3 = examples[2]
+            const ex4 = examples[3]
+            const ex5 = examples[4]
             console.log(examples)
     
-            // insertWord(cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5)
-            insertWord(cur_category, chapter, word, '1', '2', '3', '4', '5')
+            insertWord(cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5)
+            // insertWord(cur_category, chapter, word, '1', '2', '3', '4', '5') //테스트용
     
             const wordCount = await getWordCount(cur_category, chapter);
             alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`)
@@ -108,7 +109,7 @@ async function create5exs(word) {
                 model: 'gpt-3.5-turbo',
                 messages: [
                     { role: 'system', content: 'You are an assistant that provides English example sentences.' },
-                    { role: 'user', content: `Provide 5 example sentences using the word: "${word}".` },
+                    { role: 'user', content: `Comply with the following form: "The audience applauded.|관객들이 박수쳤다." provide 5 example sentences using the word: "${word}", without index.`},
                 ],
             }),
         });
@@ -116,8 +117,9 @@ async function create5exs(word) {
         const data = await response.json();
 
         if (response.ok) {
-            const examples = data.choices[0].message.content.split('\n').filter(line => line.trim());
-            examples.forEach(example => {
+            const examples5 = data.choices[0].message.content.split('\n').filter(line => line.trim());
+            examples5.forEach(example => {
+                examples.push(example);
                 const p = document.createElement('p');
                 p.textContent = example;
                 examples5.appendChild(p);
