@@ -9,7 +9,7 @@ const wordtest_btn = document.querySelector('.wordtest')
 const deleteword_btn = document.querySelector('.delete');
 
 let cur_category
-const examples = []
+const examples = ""
 
 console.log(cur_category)
 
@@ -58,14 +58,17 @@ deleteword_btn.addEventListener('click', async () => {
     const word = word_input.value;
     const chapter = chapter_input.value;
 
-    if (cur_category != undefined && chapter !== "" && word !== "") {
+    if (cur_category !== "" && chapter !== "" && word !== "") {
         const confirmDelete = confirm(`Are you sure you want to delete the word '${word}' from chapter ${chapter}?`);
         if (confirmDelete) {
             await deleteWord(cur_category, chapter, word);
             alert(`Successfully deleted the word '${word}' from chapter ${chapter}.`);
+            cur_category = "";
             word_input.value = "";
             chapter_input.value = "";
         }
+    } else if (cur_category === "") {
+        alert('Please select a book.');
     } else if (chapter === "") {
         alert('Please select a chapter.');
     } else if (word === "") {
