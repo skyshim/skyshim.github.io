@@ -5,6 +5,7 @@ import  { auth } from "./auth.js"
 
 const word_input = document.getElementById('wordInput')
 const chapter_input = document.getElementById('chapterInput')
+const categories = document.querySelectorAll('.select-cat div')
 
 const addword_btn = document.querySelector('.submit')
 const wordtest_btn = document.querySelector('.wordtest')
@@ -189,7 +190,7 @@ async function create5exs(word) {
                 model: 'gpt-3.5-turbo',
                 messages: [
                     { role: 'system', content: 'You are an assistant that provides English example sentences.' },
-                    { role: 'user', content: `provide 5 example sentences and korean meanings using the word: ${word}. Do not show index . Do not change the singular/pluarl and tense of the word. Comply with the form: "example sentence.|korean meanings."`},
+                    { role: 'user', content: `provide 5 example sentences and korean meanings using the word: ${word}. Do not show index. Use the original form of the word only. Comply with the form: "example sentence.|korean meanings."`},
                 ],
             }),
         });
