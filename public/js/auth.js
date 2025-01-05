@@ -13,7 +13,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+export const auth = getAuth(app);
 const db = getDatabase(app);
 
 // 회원가입 기능
@@ -73,7 +73,7 @@ if (document.getElementById('loginForm')) {
 
             // 이메일로 로그인 시도
             await signInWithEmailAndPassword(auth, email, password);
-            const loggedInUserId = id
+            const loggedInUserId = id;
 
             localStorage.setItem("loggedInUser", loggedInUserId);
 

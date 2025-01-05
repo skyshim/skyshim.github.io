@@ -16,6 +16,22 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db);
 
+export async function addWordbook(userId, wordbookId, wordbookName) {
+    const wordbookRef = ref(db, `users/${userId}/words/${wordbookId}`);
+    await set(wordbookRef, { name: wordbookName });
+}
+
+export async function removeWordbook(userId, wordbookId) {
+    const wordbookRef = ref(db, `users/${userId}/words/${wordbookId}`);
+    await remove(wordbookRef);
+}
+
+export async function getWordbooks(userId) {
+    const wordbooksRef = ref(db, `users/${userId}/words`);
+    const snapshot = await get(wordbooksRef);
+    return snapshot.exists() ? snapshot.val() : {};
+}
+
 //단어 추가
 export function insertWord(userid, category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
     set(ref(db, `users/${userid}/words/${category}/${chapter}/${word}`), {

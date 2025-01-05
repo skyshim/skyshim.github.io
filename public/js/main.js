@@ -1,4 +1,6 @@
 import { insertWord, getWordCount, deleteWord } from "./firebase.js";
+import { addWordbook, removeWordbook, getWordbooks } from "./firebase.js";
+import  { auth } from "./auth.js";
 
 
 const word_input = document.getElementById('wordInput')
@@ -23,7 +25,71 @@ categories.forEach(div => {
     })
 })
 
-//단어 추가가
+//단어장 추가
+document.getElementById("addWordbook").addEventListener("click", async () => {
+    const userId = auth.currentUser?.uid;
+    const wordbookId = document.getElementById("wordbookIdInput").value.trim();
+    const wordbookName = document.getElementById("wordbookNameInput").value.trim();
+
+    if (!userId) {
+        alert("로그인이 필요합니다.");
+        return;
+    }
+    if (!wordbookId || !wordbookName) {
+        alert("단어장 ID와 이름을 입력해주세요.");
+        return;
+    }
+
+    await addWordbook(userId, wordbookId, wordbookName);
+    alert("단어장이 추가되었습니다.");
+    loadWordbooks(); // 단어장 목록 갱신
+});
+
+//단어장 삭제 
+document.getElementById("removeWordbook").addEventListener("click", async () => {
+    const userId = auth.currentUser?.uid;
+    const wordbookId = document.getElementById("wordbookIdInput").value.trim();
+
+    if (!userId) {
+        alert("로그인이 필요합니다.");
+        return;
+    }
+    if (!wordbookId) {
+        alert("삭제할 단어장의 ID를 입력해주세요.");
+        return;
+    }
+
+    await removeWordbook(userId, wordbookId);
+    alert("단어장이 삭제되었습니다.");
+    loadWordbooks(); // 단어장 목록 갱신
+});
+
+// 단어장 목록 불러오기
+async function loadWordbooks() {
+    const userId = auth.currentUser?.uid;
+
+    if (!userId) {
+        alert("로그인이 필요합니다.");
+        return;
+    }
+
+    const wordbooks = await getWordbooks(userId);
+    updateWordbookUI(wordbooks);
+}
+
+function updateWordbookUI(wordbooks) {
+    const wordbookList = document.querySelector(".select-cat");
+    wordbookList.innerHTML = "";
+
+    Object.entries(wordbooks).forEach(([id, { name }]) => {
+        const div = document.createElement("div");
+        div.textContent = name;
+        div.id = id;
+        wordbookList.appendChild(div);
+    });
+}
+
+//단어 추가
 async function add_word(userid) {
     const word = word_input.value;
     const chapter = chapter_input.value;
