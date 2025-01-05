@@ -1,11 +1,10 @@
 import { insertWord, getWordCount, deleteWord } from "./firebase.js";
 import { addWordbook, removeWordbook, getWordbooks } from "./firebase.js";
-import  { auth } from "./auth.js";
+import  { auth } from "./auth.js"
 
 
 const word_input = document.getElementById('wordInput')
 const chapter_input = document.getElementById('chapterInput')
-const categories = document.querySelectorAll('.select-cat div') //categories가 wordbook에 대응
 
 const addword_btn = document.querySelector('.submit')
 const wordtest_btn = document.querySelector('.wordtest')
@@ -13,17 +12,6 @@ const deleteword_btn = document.querySelector('.delete');
 
 let cur_category  = ""
 const examples = []
-
-console.log(cur_category)
-
-categories.forEach(div => {
-    div.addEventListener("click", function() {
-        categories.forEach(d => d.classList.remove("selected"))
-        this.classList.add("selected")
-        cur_category = div.id
-        console.log(cur_category)
-    })
-})
 
 //단어장 추가
 document.getElementById("addWordbook").addEventListener("click", async () => {
@@ -87,7 +75,19 @@ function updateWordbookUI(wordbooks) {
         div.id = id;
         wordbookList.appendChild(div);
     });
+
+    const categories = document.querySelectorAll('.select-cat div') //categories가 wordbook에 대응
+    categories.forEach(div => {
+        div.addEventListener("click", function() {
+            categories.forEach(d => d.classList.remove("selected"))
+            this.classList.add("selected")
+            cur_category = div.id
+            console.log(cur_category)
+        })
+    })
 }
+loadWordbooks();
+
 
 //단어 추가
 async function add_word(userid) {
