@@ -1,8 +1,7 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase , ref, set , child, get, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, set, child, get, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-// Your web app's Firebase configuration
+// Firebase 초기화
 const firebaseConfig = {
     apiKey: "AIzaSyDH-MVLAHcVqpcsi5R3hRSE0BIqDkjqYW0",
     authDomain: "eng-word-dd044.firebaseapp.com",
@@ -13,21 +12,20 @@ const firebaseConfig = {
     appId: "1:528044187037:web:9f0318c0a5b91fe80e2374"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-const db =  getDatabase(app);
+const db = getDatabase(app);
 const dbRef = ref(db);
 
-export function insertWord(category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
-    set(ref(db, `${category}/${chapter}/${word}`), {
+//단어 추가
+export function insertWord(userid, category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
+    set(ref(db, `users/${userid}/words/${category}/${chapter}/${word}`), {
         word, ex1, ex2, ex3, ex4, ex5
     });
 }
 
-// 단어 수를 가져오는 함수
-export async function getWordCount(category, chapter) {
-    const chapterRef = child(dbRef, `${category}/${chapter}`);
+//단어 수 가져오기
+export async function getWordCount(userid, category, chapter) {
+    const chapterRef = child(dbRef, `users/${userid}/words/${category}/${chapter}`);
     const snapshot = await get(chapterRef);
     if (snapshot.exists()) {
         return Object.keys(snapshot.val()).length;
@@ -36,15 +34,16 @@ export async function getWordCount(category, chapter) {
     }
 }
 
-// 단어 삭제 함수
-export async function deleteWord(category, chapter, word) {
-    const wordRef = ref(db, `${category}/${chapter}/${word}`);
+//단어 삭제
+export async function deleteWord(userid, category, chapter, word) {
+    const wordRef = ref(db, `users/${userid}/words/${category}/${chapter}/${word}`);
     await remove(wordRef);
 }
 
-export function loadFirebaseData() {
+//전체 데이터 불러오기
+export function loadFirebaseData(userid) {
     return new Promise((resolve, reject) => {
-        get(dbRef).then((snapshot) => {
+        get(child(dbRef, `users/${userid}/words`)).then((snapshot) => {
             try {
                 if (!snapshot.exists()) {
                     reject(new Error('No data available'));
@@ -55,8 +54,6 @@ export function loadFirebaseData() {
                 const firebaseData = {};
 
                 for (const wordbook in rawData) {
-                    if (wordbook === 'openai') continue; // Skip openai data
-                    
                     firebaseData[wordbook] = {};
                     for (const chapter in rawData[wordbook]) {
                         firebaseData[wordbook][chapter] = [];
@@ -64,7 +61,6 @@ export function loadFirebaseData() {
                             const wordData = rawData[wordbook][chapter][wordKey];
                             const exampleSentences = [wordData.ex1, wordData.ex2, wordData.ex3, wordData.ex4, wordData.ex5].filter(Boolean);
                             
-                            // Create an array of example pairs (english, korean)
                             const examples = exampleSentences.map(example => {
                                 const [english, korean] = example.split('|');
                                 const maskedEnglish = english.replace(new RegExp(`\\b${wordData.word}\\b`, 'gi'), (match) => {

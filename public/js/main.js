@@ -1,5 +1,6 @@
 import { insertWord, getWordCount, deleteWord } from "./firebase.js";
 
+
 const word_input = document.getElementById('wordInput')
 const chapter_input = document.getElementById('chapterInput')
 const categories = document.querySelectorAll('.select-cat div') //categories가 wordbook에 대응
@@ -22,61 +23,63 @@ categories.forEach(div => {
     })
 })
 
-async function add_word() {
+//단어 추가가
+async function add_word(userid) {
     const word = word_input.value;
-    const chapter = chapter_input.value
+    const chapter = chapter_input.value;
 
     if (cur_category !== "" && chapter !== "" && word !== "") {
         examples.splice(0);
-        create5exs(word)
+        create5exs(word);
         setTimeout(async function() {
-            const ex1 = examples[0]
-            const ex2 = examples[1]
-            const ex3 = examples[2]
-            const ex4 = examples[3]
-            const ex5 = examples[4]
-            console.log(examples)
-    
-            insertWord(cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5)
-            // insertWord(cur_category, chapter, word, '1', '2', '3', '4', '5') //테스트용
-    
-            const wordCount = await getWordCount(cur_category, chapter);
-            alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`)
+            const ex1 = examples[0];
+            const ex2 = examples[1];
+            const ex3 = examples[2];
+            const ex4 = examples[3];
+            const ex5 = examples[4];
+            console.log(examples);
+
+            insertWord(userid, cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5);
             
-            cur_category = ""
-            categories.forEach(d => d.classList.remove("selected"))
-            word_input.value = ""
-            chapter_input.value = ""
+            const wordCount = await getWordCount(userid, cur_category, chapter);
+            alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`);
+            
+            cur_category = "";
+            categories.forEach(d => d.classList.remove("selected"));
+            word_input.value = "";
+            chapter_input.value = "";
         }, 4000);
     } else if (cur_category === "") {
-        alert('Please select a wordbook.')
+        alert('Please select a wordbook.');
     } else if (chapter === "") {
-        alert('Please select a chapter.')
+        alert('Please select a chapter.');
     } else if (word === "") {
-        alert('Please write a word.')
+        alert('Please write a word.');
     }
 }
 
-// 단어 삭제 버튼 이벤트 추가
 deleteword_btn.addEventListener('click', async () => {
+    localStorage.getItem("loggedInUser")
+    
     const word = word_input.value;
     const chapter = chapter_input.value;
 
     if (cur_category !== "" && chapter !== "" && word !== "") {
         const confirmDelete = confirm(`Are you sure you want to delete the word '${word}' from chapter ${chapter}?`);
         if (confirmDelete) {
-            await deleteWord(cur_category, chapter, word);
+            const userid = localStorage.getItem('loggedInUser'); // 로그인된 유저 ID 가져오기
+            await deleteWord(userid, cur_category, chapter, word);
             alert(`Successfully deleted the word '${word}' from chapter ${chapter}.`);
 
             cur_category = "";
-            categories.forEach(d => d.classList.remove("selected"))
+            categories.forEach(d => d.classList.remove("selected"));
             word_input.value = "";
             chapter_input.value = "";
         }
     } else if (cur_category === "") {
         alert('Please select a wordbook.');
     } else if (chapter === "") {
-        alert('Please select a chapter.')
+        alert('Please select a chapter.');
     } else if (word === "") {
         alert('Please write a word.');
     }
@@ -86,12 +89,12 @@ window.onkeydown = (e) => {
     const code = e.code;
 
     if (code === 'Enter') {
-        add_word()
+        add_word(localStorage.getItem("loggedInUser"));
     }
 }
 
 addword_btn.addEventListener('click', function() {
-    add_word()
+    add_word(localStorage.getItem("loggedInUser"));
 })
 
 wordtest_btn.addEventListener('click', function() {

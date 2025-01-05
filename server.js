@@ -16,6 +16,18 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // 기본 HTML 제공
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'signup.html'));
+});
+
+app.get('/home', (req, res) => {
+    const user = req.query.user; // 프론트에서 전달받은 유저 정보 확인
+    if (!user) {
+        return res.status(401).send('Unauthorized: Please log in');
+    }
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
@@ -23,6 +35,7 @@ app.get('/', (req, res) => {
 app.get('/wordtest', (req, res) => {
     res.sendFile(path.join(__dirname, 'wordtest.html'));
 });
+
 
 // OpenAI API 프록시
 app.use(express.json());
@@ -44,12 +57,9 @@ app.post('/api/openai', async (req, res) => {
             messages,
         });
 
-        console.log('OpenAI API 응답:', response); // 응답 로그 추가
-
         // 응답 반환
         res.json(response);
     } catch (error) {
-        console.error("서버 오류:", error);  // 서버 내부 오류 출력
         res.status(500).json({ error: 'Error communicating with OpenAI API', message: error.message });
     }
 });
