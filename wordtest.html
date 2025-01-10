@@ -100,7 +100,7 @@
                     <input type="text" id="answer" placeholder="Type your answer here">
                     <div class="button-container">
                         <button type="submit">Submit</button>
-                        <button id="pass-button" onclick="passWord()">Pass</button>
+                        <button id="pass-button" onclick="passWord(event)">Pass</button>
                     </div>
                 </form>
             </div>
@@ -178,12 +178,16 @@
             return false;
         };
 
-        window.passWord = function() {
+        window.passWord = function(event) {
+            event.preventDefault();
             const resultDiv = document.getElementById('result');
-            resultDiv.textContent = `Wrong! The answer was ${selectedData[currentIndex].word}.`;
+            resultDiv.textContent = `Wrong! The answer was '${selectedData[currentIndex].word}.'`;
             resultDiv.style.color = "red";
-            currentIndex++;
-            setTimeout(loadQuestion, 2000);
+            resultDiv.classList.remove('hidden');
+            setTimeout(() => {
+                currentIndex++;
+                loadQuestion();
+            }, 2000);
         };
 
         function loadQuestion() {
@@ -204,8 +208,6 @@
             }
         }
 
-
-
         function checkAnswer() {
             const userAnswer = document.getElementById('answer').value.trim();
             const resultDiv = document.getElementById('result');
@@ -221,7 +223,7 @@
                 resultDiv.style.color = "red";
 
                 if (failedAttempts >= 3) {
-                    passWord();
+                    passWord(new Event('click'));
                 }
             }
 
