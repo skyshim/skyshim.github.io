@@ -94,13 +94,16 @@
             </div>
             <div class="hint">
                 <p id="korean-hint"></p>
+                <p id="hint-result"></p>
             </div>
             <div class="input-container">
                 <form id="quiz-form" onsubmit="return handleSubmit(event)">
-                    <input type="text" id="answer" placeholder="Type your answer here">
+                    <input type="text" id="answer" placeholder="Type your answer here" onkeypress="submitOnEnter(event)">
                     <div class="button-container">
-                        <button type="submit">Submit</button>
-                        <button id="pass-button" onclick="passWord(event)">Pass</button>
+                        <button type="submit">정답</button>
+                        <button id="pass-button" onclick="passWord(event)">패스</button>
+                        <button id="hint-button" onclick="useHint(event)">힌트</button>
+                        <button id="home-button" onclick="goBack()">홈으로</button>
                     </div>
                 </form>
             </div>
@@ -124,6 +127,7 @@
         let selectedData = [];
         let currentIndex = 0;
         let failedAttempts = 0;
+        let hintCount = 0;
 
         function shuffleArray(array) { 
             for (let i = array.length - 1; i > 0; i--) { 
@@ -166,6 +170,7 @@
 
                 currentIndex = 0;
                 failedAttempts = 0;
+                hintCount = 0;
                 document.getElementById('category-selection').classList.add('hidden');
                 document.getElementById('quiz-section').classList.remove('hidden');
                 loadQuestion();
@@ -190,23 +195,15 @@
             }, 2000);
         };
 
-        function loadQuestion() {
-            if (currentIndex < selectedData.length) {
-                const examples = selectedData[currentIndex].examples;
-                const randomExample = examples[Math.floor(Math.random() * examples.length)];
-            
-                document.getElementById('progress').innerHTML = `(${currentIndex + 1}/${selectedData.length})`;
-                document.getElementById('english-sentence').innerHTML = randomExample.english;
-                document.getElementById('korean-hint').innerHTML = randomExample.korean;
-                document.getElementById('answer').value = "";
-                document.getElementById('result').classList.add('hidden');
-                failedAttempts = 0;
-            } else {
-                document.getElementById('quiz-section').classList.add('hidden');
-                document.getElementById('category-selection').classList.remove('hidden');
-                alert('Congratulations! You have completed the quiz!');
+        window.useHint = function(event) {
+            event.preventDefault();
+            const hintResult = document.getElementById('hint-result');
+            if (hintCount < 2) {
+                const word = selectedData[currentIndex].word;
+                hintResult.textContent = `Hint ${hintCount + 1}: ${word.slice(0, hintCount + 2)}...`;
+                hintCount++;
             }
-        }
+        };
 
         function checkAnswer() {
             const userAnswer = document.getElementById('answer').value.trim();
@@ -223,18 +220,44 @@
                 resultDiv.style.color = "red";
 
                 if (failedAttempts >= 3) {
-                    passWord(new Event('click'));
+                    passWord(event);
                 }
             }
 
             resultDiv.classList.remove('hidden');
         }
 
+        function loadQuestion() {
+            if (currentIndex < selectedData.length) {
+                const examples = selectedData[currentIndex].examples;
+                const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            
+                document.getElementById('progress').innerHTML = `(${currentIndex + 1}/${selectedData.length})`;
+                document.getElementById('english-sentence').innerHTML = randomExample.english;
+                document.getElementById('korean-hint').innerHTML = randomExample.korean;
+                document.getElementById('answer').value = "";
+                document.getElementById('result').classList.add('hidden');
+                document.getElementById('hint-result').textContent = "";
+                failedAttempts = 0;
+                hintCount = 0;
+            } else {
+                document.getElementById('quiz-section').classList.add('hidden');
+                document.getElementById('category-selection').classList.remove('hidden');
+                alert('Congratulations! You have completed the quiz!');
+            }
+        }
+
+        function submitOnEnter(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.querySelector("#quiz-form button[type='submit']").click();
+            }
+        }
+
         async function initializeData() {
             data = await loadFirebaseData();
             const wordbookSelect = document.getElementById('wordbook');
             wordbookSelect.innerHTML = "<option value=''>단어장 선택...</option>";
-
             for (let wordbook in data) {
                 const option = document.createElement('option');
                 option.value = wordbook;
