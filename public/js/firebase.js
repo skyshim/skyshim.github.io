@@ -42,6 +42,18 @@ export async function deleteWord(category, chapter, word) {
     await remove(wordRef);
 }
 
+export async function getChaptersFromFirebase(category) {
+    const categoryRef = child(dbRef, category);
+    const snapshot = await get(categoryRef);
+
+    if (snapshot.exists()) {
+        return snapshot.val();
+    } else {
+        console.warn(`No data found for category ${category}`);
+        return null;
+    }
+}
+
 export function loadFirebaseData() {
     return new Promise((resolve, reject) => {
         get(dbRef).then((snapshot) => {

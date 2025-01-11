@@ -10,36 +10,47 @@
 <body>
     <h1>⭐스시스심의 영단어 학습⭐</h1>
 
-
-    <div class="select-chapter">
-        
-    </div>
-
     <div class="container">
-        <div class="word-in">
-            <div class="select-cat">
-                <div id="neugryeul-voca">능률VOCA</div>
-                <div id="godanggeut">고단끝</div>
-                <div id="custom">커스텀단어장</div>
-            </div>
-
-            <input type="text" id="chapterInput" placeholder="DAY 입력...">
-            <input type="text" id="wordInput" placeholder="새 단어 입력...">
+        <!-- 카테고리 선택 -->
+        <div class="select-cat">
+            <div class="cat-option" id="neugryeul-voca">능률VOCA</div>
+            <div class="cat-option" id="godanggeut">고단끝</div>
+            <div class="cat-option" id="custom">커스텀단어장</div>
         </div>
+
+        <!-- 챕터 선택 -->
+        <div class="chapter-select">
+            <label for="chapterDropdown">Select a Chapter:</label>
+            <select id="chapterDropdown">
+                <option value="">Select a Wordbook</option>
+            </select>
+        </div>
+
+        <!-- 단어 테이블 -->
+        <div class="word-display">
+            <table id="wordTable">
+                <thead>
+                    <tr>
+                        <th>챕터</th>
+                        <th>단어</th>
+                        <th>예문</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Firebase 데이터로 채워질 부분 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 새 단어 추가 -->
+        <input type="text" id="wordInput" placeholder="새 단어 입력...">
 
         <div class="bottom-btn">
             <div class="submit">단어 등록</div>
-            <div class="delete">단어 삭제</div>
             <div class="wordtest">단어 테스트</div>
         </div>
-
-
-
-        <div class="examples5" id="examples5"></div>
     </div>
-    
-
-
 
     <script type="module" src="/public/js/main.js"></script>
     <script type="module" src="/public/js/firebase.js"></script>
