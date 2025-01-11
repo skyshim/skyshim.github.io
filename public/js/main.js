@@ -6,6 +6,7 @@ import { insertWord, getWordCount, deleteWord, loadFirebaseData, getChaptersFrom
 
 const word_input = document.getElementById("wordInput");
 const chapter_select = document.getElementById("chapterDropdown");
+const chapter_input = document.getElementById('chapterInput')
 const categories = document.querySelectorAll(".select-cat div");
 const addword_btn = document.querySelector(".submit");
 const wordtest_btn = document.querySelector(".wordtest");
@@ -160,9 +161,14 @@ async function add_word() {
 
     if (cur_category && cur_chapter && word) {
         const examples = await create5exs(word);
-        console.log(examples)
-        insertWord(cur_category, cur_chapter, word, ...examples);
-        alert(`Successfully added '${word}' to ${cur_chapter}.`);
+        
+        if (chapter_input.value !== "") {
+            insertWord(cur_category, chapter_input.value, word, ...examples);
+            alert(`Successfully added '${word}' to ${chapter_input.value}.`);
+        } else {
+            insertWord(cur_category, cur_chapter, word, ...examples)
+            alert(`Successfully added '${word}' to ${cur_chapter}.`);
+        }
         word_input.value = "";
         loadWordTable(cur_category, cur_chapter);
     } else {
