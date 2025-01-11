@@ -11,6 +11,7 @@ const addword_btn = document.querySelector(".submit");
 const wordtest_btn = document.querySelector(".wordtest");
 const wordTableBody = document.querySelector("#wordTable tbody");
 
+const examples = []
 let cur_category = "";
 let cur_chapter = "";
 
@@ -25,9 +26,11 @@ categories.forEach(div => {
         this.classList.add("selected");
         cur_category = div.id;
 
-        console.log("Selected category:", cur_category);
         loadChapters(cur_category);
         loadFirstChapterForCategory(cur_category);
+
+        const examples5 = document.getElementById('examples5')
+        examples5.innerHTML = ''
     });
 });
 
@@ -157,6 +160,7 @@ async function add_word() {
 
     if (cur_category && cur_chapter && word) {
         const examples = await create5exs(word);
+        console.log(examples)
         insertWord(cur_category, cur_chapter, word, ...examples);
         alert(`Successfully added '${word}' to ${cur_chapter}.`);
         word_input.value = "";
@@ -185,10 +189,10 @@ async function create5exs(word) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
+                model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'You are an assistant that provides English example sentences.' },
-                    { role: 'user', content: `provide 5 example sentences and korean meanings using the word: ${word}. Do not show index. Do not change the singular/pluarl and tense of the word. Comply with the form: "example sentence.|korean meanings."`},
+                    { role: 'user', content: `provide 5 example sentences and korean meanings using the word: ${word}. Do not show index. Never change the singular/pluarl and tense of the word. Comply with the form: "example sentence.|korean meanings."`},
                 ],
             }),
         });
@@ -212,7 +216,7 @@ async function create5exs(word) {
         alert('Error: Unable to connect to the API.');
     }
 
-    return ["ex1", "ex2", "ex3", "ex4", "ex5"]; // 예제 반환
+    return examples; // 예제 반환
 }
 
 // =====================
@@ -224,3 +228,10 @@ addword_btn.addEventListener("click", add_word);
 
 // 단어 테스트 페이지로 이동 이벤트
 wordtest_btn.addEventListener("click", () => window.open("../wordtest", "_self"));
+
+// 엔터 시 단어 등록
+word_input.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {  // Enter 키가 눌리면
+        add_word();
+    }
+});
