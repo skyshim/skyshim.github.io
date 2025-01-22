@@ -13,7 +13,7 @@ h1 {
 .cat-option {
     margin: 15px;
     padding: 15px 20px;
-    width: 140px;
+    width: 130px;
     text-align: center;
     background-color: lightblue;
     color: #333;
@@ -170,8 +170,8 @@ input {
     }
 
     .cat-option {
-        width: 90px;
-        font-size: 14px;
+        width: 80px;
+        font-size: 12px;
     }
 
     .bottom-btn div {

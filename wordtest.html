@@ -198,11 +198,17 @@
         window.useHint = function(event) {
             event.preventDefault();
             const hintResult = document.getElementById('hint-result');
-            if (hintCount < 2) {
-                const word = selectedData[currentIndex].word;
-                hintResult.textContent = `Hint ${hintCount + 1}: ${word.slice(0, hintCount + 2)}...`;
-                hintCount++;
-            }
+
+            const word = selectedData[currentIndex].word;
+            hintResult.textContent = `Hint ${hintCount + 1}: ${word.slice(0, hintCount + 2)}...`;
+            hintCount++;
+            
+            // removed hint limit
+            // if (hintCount < 2) {
+            //     const word = selectedData[currentIndex].word;
+            //     hintResult.textContent = `Hint ${hintCount + 1}: ${word.slice(0, hintCount + 2)}...`;
+            //     hintCount++;
+            // }
         };
 
         function checkAnswer() {
