@@ -19,6 +19,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/seatbachi', (req, res) => {
+    res.sendFile(path.join(__dirname, 'seat.html'));
+});
+
 // wordtest.html 제공
 app.get('/wordtest', (req, res) => {
     res.sendFile(path.join(__dirname, 'wordtest.html'));
