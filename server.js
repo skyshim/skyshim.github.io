@@ -14,17 +14,18 @@ app.use(cors());
 // 정적 파일 제공
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+// 기본 HTML 제공
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/seatbachi', (req, res) => {
+    res.sendFile(path.join(__dirname, 'seat.html'));
 });
 
 // wordtest.html 제공
 app.get('/wordtest', (req, res) => {
     res.sendFile(path.join(__dirname, 'wordtest.html'));
-});
-
-app.get('/exam', (req, res) => {
-    res.sendFile(path.join(__dirname, 'exam.html'));
 });
 
 

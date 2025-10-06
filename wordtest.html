@@ -94,13 +94,16 @@
             </div>
             <div class="hint">
                 <p id="korean-hint"></p>
+                <p id="hint-result"></p>
             </div>
             <div class="input-container">
                 <form id="quiz-form" onsubmit="return handleSubmit(event)">
-                    <input type="text" id="answer" placeholder="Type your answer here">
+                    <input type="text" id="answer" placeholder="Type your answer here" onkeypress="submitOnEnter(event)">
                     <div class="button-container">
-                        <button type="submit">Submit</button>
-                        <button id="pass-button" onclick="passWord()">Pass</button>
+                        <button type="submit">정답</button>
+                        <button id="pass-button" onclick="passWord(event)">패스</button>
+                        <button id="hint-button" onclick="useHint(event)">힌트</button>
+                        <button id="home-button" onclick="goBack()">홈으로</button>
                     </div>
                 </form>
             </div>
@@ -110,13 +113,21 @@
 
     <script type="module">
         import { loadFirebaseData } from "/public/js/firebase.js";
-        import { getWordbooks } from "/public/js/firebase.js";
+        
+        // Custom names for the wordbooks
+        const customNames = {
+            "godanggeut": "고단끝",
+            "neugryeul-voca": "능률VOCA",
+            "custom" : "커스텀단어장"
+            // Add more mappings as needed
+        };
 
         // Declare global variables
         let data = {};
         let selectedData = [];
         let currentIndex = 0;
         let failedAttempts = 0;
+        let hintCount = 0;
 
         function shuffleArray(array) { 
             for (let i = array.length - 1; i > 0; i--) { 
@@ -125,37 +136,22 @@
             } return array; 
         }
 
-        async function loadFirebaseData() {
-            const wordbooks = await getWordbooks();
-            populateWordbookDropdown(wordbooks);
-            return wordbooks;
-        }
-
-        function populateWordbookDropdown(wordbooks) {
-            const wordbookSelect = document.getElementById("wordbook");
-            wordbookSelect.innerHTML = "<option value=''>단어장 선택...</option>";
-
-            Object.entries(wordbooks).forEach(([id, { name }]) => {
-                const option = document.createElement("option");
-                option.value = id; // 단어장 ID를 값으로 설정
-                option.textContent = name; // 단어장 이름을 표시
-                wordbookSelect.appendChild(option);
-            });
-        }
-
         // Make functions globally available
-        window.populateChapters = function(chapters) {
+        window.populateChapters = function() {
             const wordbook = document.getElementById('wordbook').value;
             const chaptersSelect = document.getElementById('chapters');
             
             chaptersSelect.innerHTML = "";
             
-            Object.keys(chapters).forEach(chapter => {
-                const option = document.createElement("option");
-                option.value = chapter;
-                option.textContent = chapter;
-                chaptersSelect.appendChild(option);
-            });
+            if (wordbook) {
+                const chapters = Object.keys(data[wordbook]);
+                chapters.forEach(chapter => {
+                    const option = document.createElement('option');
+                    option.value = chapter;
+                    option.textContent = chapter.charAt(0).toUpperCase() + chapter.slice(1);
+                    chaptersSelect.appendChild(option);
+                });
+            }
             
             document.getElementById('start-button').disabled = true;
         };
@@ -174,6 +170,7 @@
 
                 currentIndex = 0;
                 failedAttempts = 0;
+                hintCount = 0;
                 document.getElementById('category-selection').classList.add('hidden');
                 document.getElementById('quiz-section').classList.remove('hidden');
                 loadQuestion();
@@ -186,33 +183,33 @@
             return false;
         };
 
-        window.passWord = function() {
+        window.passWord = function(event) {
+            event.preventDefault();
             const resultDiv = document.getElementById('result');
-            resultDiv.textContent = `Wrong! The answer was ${selectedData[currentIndex].word}.`;
+            resultDiv.textContent = `Wrong! The answer was '${selectedData[currentIndex].word}.'`;
             resultDiv.style.color = "red";
-            currentIndex++;
-            setTimeout(loadQuestion, 2000);
+            resultDiv.classList.remove('hidden');
+            setTimeout(() => {
+                currentIndex++;
+                loadQuestion();
+            }, 2000);
         };
 
-        function loadQuestion() {
-            if (currentIndex < selectedData.length) {
-                const examples = selectedData[currentIndex].examples;
-                const randomExample = examples[Math.floor(Math.random() * examples.length)];
+        window.useHint = function(event) {
+            event.preventDefault();
+            const hintResult = document.getElementById('hint-result');
+
+            const word = selectedData[currentIndex].word;
+            hintResult.textContent = `Hint ${hintCount + 1}: ${word.slice(0, hintCount + 2)}...`;
+            hintCount++;
             
-                document.getElementById('progress').innerHTML = `(${currentIndex + 1}/${selectedData.length})`;
-                document.getElementById('english-sentence').innerHTML = randomExample.english;
-                document.getElementById('korean-hint').innerHTML = randomExample.korean;
-                document.getElementById('answer').value = "";
-                document.getElementById('result').classList.add('hidden');
-                failedAttempts = 0;
-            } else {
-                document.getElementById('quiz-section').classList.add('hidden');
-                document.getElementById('category-selection').classList.remove('hidden');
-                alert('Congratulations! You have completed the quiz!');
-            }
-        }
-
-
+            // removed hint limit
+            // if (hintCount < 2) {
+            //     const word = selectedData[currentIndex].word;
+            //     hintResult.textContent = `Hint ${hintCount + 1}: ${word.slice(0, hintCount + 2)}...`;
+            //     hintCount++;
+            // }
+        };
 
         function checkAnswer() {
             const userAnswer = document.getElementById('answer').value.trim();
@@ -229,18 +226,44 @@
                 resultDiv.style.color = "red";
 
                 if (failedAttempts >= 3) {
-                    passWord();
+                    passWord(event);
                 }
             }
 
             resultDiv.classList.remove('hidden');
         }
 
+        function loadQuestion() {
+            if (currentIndex < selectedData.length) {
+                const examples = selectedData[currentIndex].examples;
+                const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            
+                document.getElementById('progress').innerHTML = `(${currentIndex + 1}/${selectedData.length})`;
+                document.getElementById('english-sentence').innerHTML = randomExample.english;
+                document.getElementById('korean-hint').innerHTML = randomExample.korean;
+                document.getElementById('answer').value = "";
+                document.getElementById('result').classList.add('hidden');
+                document.getElementById('hint-result').textContent = "";
+                failedAttempts = 0;
+                hintCount = 0;
+            } else {
+                document.getElementById('quiz-section').classList.add('hidden');
+                document.getElementById('category-selection').classList.remove('hidden');
+                alert('Congratulations! You have completed the quiz!');
+            }
+        }
+
+        function submitOnEnter(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.querySelector("#quiz-form button[type='submit']").click();
+            }
+        }
+
         async function initializeData() {
             data = await loadFirebaseData();
             const wordbookSelect = document.getElementById('wordbook');
             wordbookSelect.innerHTML = "<option value=''>단어장 선택...</option>";
-
             for (let wordbook in data) {
                 const option = document.createElement('option');
                 option.value = wordbook;
