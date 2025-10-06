@@ -270,6 +270,7 @@
             if (answerContent) {
                 const answerDiv = document.createElement('div');
                 answerDiv.className = 'problem-answer';
+                // Re-introduce Korean label here for the UI
                 answerDiv.innerHTML = `<b>정답:</b><br>${answerContent.trim().replace(/\n/g, '<br>')}`;
                 const toggleBtn = document.createElement('button');
                 toggleBtn.className = 'toggle-answer-btn';
@@ -287,13 +288,14 @@
         function renderGenericProblem(container, questionContent) {
             const questionDiv = document.createElement('div');
             questionDiv.className = 'problem-question';
-            questionDiv.innerHTML = questionContent.replace(/\n/g, '<br>');
+            questionDiv.innerHTML = questionContent.replace(/\n/g, '<br>').replace(/&lt;Conditions&gt;/g, '<b>&lt;조건&gt;</b>');
             container.appendChild(questionDiv);
         }
 
         function renderProblems(content) {
             problemsOutput.innerHTML = '';
-            const problemRegex = /\[문제 (\d+): Type (\d+)\]/g;
+            // Use English labels for parsing
+            const problemRegex = /\[Problem (\d+): Type (\d+)\]/g;
             const parts = content.split(problemRegex);
             
             let i = 1;
@@ -307,8 +309,10 @@
                     continue;
                 }
 
-                const [question, answer] = problemContent.split('정답:');
+                // Use English label for parsing
+                const [question, answer] = problemContent.split('Answer:');
                 
+                // Re-introduce Korean label here for the UI
                 const container = createBaseProblemElement(`[문제 ${problemNumber}: Type ${problemType}]`);
                 
                 renderGenericProblem(container, question);
@@ -330,8 +334,8 @@
             problemsOutput.innerHTML = 'Generating problems...';
             const selectedModel = modelSelect.value;
 
-            const userPrompt = `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should be in the style of a Korean high school English exam. For each question, start with a clear problem number and type, like [문제 1: Type 3]. After the question, provide the correct answer starting with a new line and the label "정답:". **All generated content, including questions, conditions, and any other instructional text, must be in English.**\n\nPlease include a mix of the following 6 types of questions:\n\n**Passage:**\n${passage}\n\n---\n\n**Question Types to Generate:**\n\n**Type 1: Find the Right Word**\n- Task: Create a summary or outline of the passage with 3-5 blanks (e.g., (A), (B), (C)...).\n- Conditions: For some blanks, provide a list of 5-6 words from which the user must choose. For other blanks, instruct the user to find the exact word(s) from the passage without transformation. Clearly state these conditions under a "<조건>" section.\n\n**Type 2: Check Grammar Error**\n- Task: Rewrite a portion of the passage, introducing 2-3 subtle grammatical errors.\n- Conditions: Instruct the user to find all the errors and correct them. You can either present the text without hints, or mark 5-7 potential error locations (a, b, c, d, e...) and ask the user to identify the incorrect ones.\n\n**Type 3: Fill the Summary (with Variation)**\n- Task: Create a 1-2 sentence summary of the passage with 3-4 blanks.\n- Conditions: Instruct the user to fill the blanks using words from the passage. Specify which blanks require the word to be used **as-is** and which require **grammatical transformation**. Specify the number of words for each blank.\n\n**Type 4: Rearrange Two Sentences**\n- Task: Select two sentences from the passage. Replace them with blanks (A) and (B).\n- Conditions: Provide a single, scrambled list containing all the words for *both* sentences mixed together. Instruct the user to reconstruct both sentences. State that one word in the list needs to be grammatically transformed.\n\n**Type 5: Paragraph & Sentence Rearrangement**\n- This is a two-part question.\n- Part 1: Take a section of the passage, divide it into 4 logical chunks (A, B, C, D), and scramble their order. Ask the user to find the correct order.\n- Part 2: Create a final summary sentence with a blank. Provide a scrambled list of 8-10 words to fill the blank.\n- Conditions for Part 2: Instruct the user to construct the sentence, transforming 2-3 of the words as needed.\n
-**Type 6: Free-form Blank Filling**\n- Task: Create a summary of the passage with two large blanks, (A), and (B).\n- Conditions: For each blank, provide a small list of 2-4 required words that must be included. Instruct the user to write their own sentence for each blank. The final sentence for each blank must have a specific word count (e.g., (A) 6 words, (B) 7 words). The given words must be used without transformation.`
+            // ALL PROMPTS ARE NOW 100% ENGLISH TO AVOID CONFUSING THE AI
+            const userPrompt = `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should be in the style of a Korean high school English exam. For each question, start with a clear problem number and type, like [Problem 1: Type 3]. After the question, provide the correct answer starting with a new line and the label "Answer:". All generated content, including questions, conditions, and any other instructional text, must be in English.\n\nPlease include a mix of the following 6 types of questions:\n\n**Passage:**\n${passage}\n\n---\n\n**Question Types to Generate:**\n\n**Type 1: Find the Right Word**\n- Task: Create a summary or outline of the passage with 3-5 blanks (e.g., (A), (B), (C)...).\n- Conditions: For some blanks, provide a list of 5-6 words from which the user must choose. For other blanks, instruct the user to find the exact word(s) from the passage without transformation. Clearly state these conditions under a "<Conditions>" section.\n\n**Type 2: Check Grammar Error**\n- Task: Rewrite a portion of the passage, introducing 2-3 subtle grammatical errors.\n- Conditions: Instruct the user to find all the errors and correct them. You can either present the text without hints, or mark 5-7 potential error locations (a, b, c, d, e...) and ask the user to identify the incorrect ones.\n\n**Type 3: Fill the Summary (with Variation)**\n- Task: Create a 1-2 sentence summary of the passage with 3-4 blanks.\n- Conditions: Instruct the user to fill the blanks using words from the passage. Specify which blanks require the word to be used **as-is** and which require **grammatical transformation**. Specify the number of words for each blank.\n\n**Type 4: Rearrange Two Sentences**\n- Task: Select two sentences from the passage. Replace them with blanks (A) and (B).\n- Conditions: Provide a single, scrambled list containing all the words for *both* sentences mixed together. Instruct the user to reconstruct both sentences. State that one word in the list needs to be grammatically transformed.\n\n**Type 5: Paragraph & Sentence Rearrangement**\n- This is a two-part question.\n- Part 1: Take a section of the passage, divide it into 4 logical chunks (A, B, C, D), and scramble their order. Ask the user to find the correct order.\n- Part 2: Create a final summary sentence with a blank. Provide a scrambled list of 8-10 words to fill the blank.\n- Conditions for Part 2: Instruct the user to construct the sentence, transforming 2-3 of the words as needed.\n\n**Type 6: Free-form Blank Filling**\n- Task: Create a summary of the passage with two large blanks, (A), and (B).\n- Conditions: For each blank, provide a small list of 2-4 required words that must be included. Instruct the user to write their own sentence for each blank. The final sentence for each blank must have a specific word count (e.g., (A) 6 words, (B) 7 words). The given words must be used without transformation.`
 
             try {
                 const response = await fetch('/api/openai', {
@@ -340,7 +344,7 @@
                     body: JSON.stringify({
                         model: selectedModel,
                         messages: [
-                            { role: 'system', content: 'You are an expert assistant who creates high-quality, subjective English questions in the style of Korean high school exams. The questions and all instructional text must be in English. You must format your entire response as a single block of text. Each problem must start with a unique number and type identifier like [문제 1: Type 3]. The answer for each problem must start on a new line, prefixed with "정답:".' },
+                            { role: 'system', content: 'You are an expert assistant who creates high-quality, subjective English questions in the style of Korean high school exams. The questions and all instructional text must be in English. You must format your entire response as a single block of text. Each problem must start with a unique number and type identifier like [Problem 1: Type 3]. The answer for each problem must start on a new line, prefixed with "Answer:".' },
                             { role: 'user', content: userPrompt },
                         ],
                     }),
