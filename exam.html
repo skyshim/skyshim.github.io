@@ -363,6 +363,9 @@ ${passage}
 - Task: Select two sentences from the passage. Replace them with blanks (A) and (B).
 - Conditions: Provide a single, scrambled list containing all the words for *both* sentences mixed together. Instruct the user to reconstruct both sentences. State that one word in the list needs to be grammatically transformed.
 - **Crucial: You must show the original passage context with (A) and (B) marking the exact locations. Before finalizing, internally verify that the scrambled words can form the original sentences perfectly. The puzzle must be solvable.**
+- **Example Structure to Follow:**
+    - **Question:** Must contain the passage context with (A) and (B) markers, followed by the Word Bank.
+    - **Answer:** Must contain the reconstructed sentences for (A) and (B).
 
 **Type 5: Paragraph & Sentence Rearrangement**
 - This is a two-part question.
@@ -371,7 +374,7 @@ ${passage}
 - Conditions for Part 2: Instruct the user to construct the sentence, transforming 2-3 of the words as needed.
 
 **Type 6: Free-form Blank Filling**
-- Task: Create a summary of the passage with two large blanks, (A) and (B).
+- Task: Create a summary of the passage with two large blanks, (A), and (B).
 - Conditions: For each blank, provide a small list of 2-4 required words that must be included. Instruct the user to write their own sentence for each blank. The final sentence for each blank must have a specific word count (e.g., (A) 6 words, (B) 7 words). The given words must be used without transformation.
 - **Crucial: You must provide the summary sentence context around the (A) and (B) blanks. Do not just write '(A)___(B)___'. Example: 'The passage shows that (A), which in turn leads to (B).**`;
 
