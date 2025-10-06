@@ -288,7 +288,8 @@
         function renderGenericProblem(container, questionContent) {
             const questionDiv = document.createElement('div');
             questionDiv.className = 'problem-question';
-            questionDiv.innerHTML = questionContent.replace(/\n/g, '<br>').replace(/&lt;Conditions&gt;/g, '<b>&lt;조건&gt;</b>');
+            // Correctly find <Conditions> tag, replace it, and wrap it in the styled div.
+            questionDiv.innerHTML = questionContent.replace(/\n/g, '<br>').replace(/<Conditions>/g, '<div class="problem-conditions"><b>&lt;조건&gt;</b><br>').replace(/<\/Conditions>/g, '</div>');
             container.appendChild(questionDiv);
         }
 
