@@ -44,6 +44,7 @@
         .button-container {
             margin-top: 20px;
         }
+        /* General Problem Styling */
         .problem-container {
             margin-bottom: 25px;
             padding: 15px;
@@ -53,12 +54,21 @@
         }
         .problem-title {
             font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 10px;
+            font-size: 1.2em;
+            margin-bottom: 15px;
             color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
         }
-        .problem-question, .problem-conditions, .problem-answer {
+        .problem-subtitle {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .problem-passage, .problem-question, .problem-conditions, .problem-answer {
             margin-bottom: 10px;
+            line-height: 1.6;
         }
         .problem-conditions {
             padding: 10px;
@@ -87,6 +97,55 @@
             background-color: #007bff;
             color: #fff;
         }
+
+        /* Type-Specific Styles (for future use) */
+        .summary-blank, .rearrange-blank {
+            display: inline-block;
+            padding: 2px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #eee;
+            font-style: italic;
+            min-width: 50px;
+            text-align: center;
+        }
+        .word-bank {
+            padding: 10px;
+            background-color: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .word-bank-title {
+            font-weight: bold;
+        }
+        .word-bank span {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 3px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .error-text {
+            text-decoration: underline;
+            text-decoration-style: wavy;
+            text-decoration-color: red;
+            cursor: pointer;
+        }
+        .paragraph-scramble-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .scrambled-paragraph {
+            padding: 10px;
+            border: 1px dashed #ccc;
+            background-color: #fff;
+        }
+        .scrambled-paragraph strong {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -112,6 +171,14 @@
         </div>
 
         <div class="button-container">
+            <label for="model-select">Select AI Model: </label>
+            <select id="model-select">
+                <option value="gpt-4-turbo">GPT-4 Turbo (High Quality)</option>
+                <option value="gpt-3.5-turbo">GPT-3-5 Turbo (Low Cost)</option>
+            </select>
+        </div>
+
+        <div class="button-container">
             <button id="generate-problems">Generate Problems</button>
         </div>
 
@@ -122,6 +189,7 @@
     <script type="module">
         import { savePassage, getPassages, getPassage } from './public/js/firebase.js';
 
+        // DOM Elements
         const imageUpload = document.getElementById('image-upload');
         const imagePreview = document.getElementById('image-preview');
         const textOutput = document.getElementById('text-output');
@@ -131,7 +199,9 @@
         const passageTitleInput = document.getElementById('passage-title');
         const passageSelect = document.getElementById('passage-select');
         const loadPassageBtn = document.getElementById('load-passage');
+        const modelSelect = document.getElementById('model-select');
 
+        // Firebase Functions
         async function loadPassages() {
             const passages = await getPassages();
             passageSelect.innerHTML = '<option value="">Select a passage</option>';
@@ -146,12 +216,10 @@
         savePassageBtn.addEventListener('click', async () => {
             const title = passageTitleInput.value.trim();
             const content = textOutput.value.trim();
-
             if (!title || !content) {
                 alert('Please provide a title and content for the passage.');
                 return;
             }
-
             await savePassage(title, content);
             alert('Passage saved successfully!');
             passageTitleInput.value = '';
@@ -164,79 +232,94 @@
                 alert('Please select a passage to load.');
                 return;
             }
-
             const passage = await getPassage(title);
             if (passage) {
                 textOutput.value = passage.content;
             }
         });
 
+        // Tesseract OCR
         imageUpload.addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 imagePreview.src = e.target.result;
                 imagePreview.style.display = 'block';
             };
             reader.readAsDataURL(file);
-
             textOutput.value = 'Extracting text...';
-            const { data: { text } } = await Tesseract.recognize(
-                file,
-                'eng',
-                {
-                    logger: m => console.log(m) 
-                }
-            );
-            const processedText = text.replace(/\\n/g, ' ');
+            const { data: { text } } = await Tesseract.recognize(file, 'eng', { logger: m => console.log(m) });
+            const processedText = text.replace(/\n/g, ' ');
             textOutput.value = processedText;
         });
 
+        // --- Problem Rendering ---
+
+        function createBaseProblemElement(titleText) {
+            const container = document.createElement('div');
+            container.className = 'problem-container';
+            const title = document.createElement('div');
+            title.className = 'problem-title';
+            title.textContent = titleText;
+            container.appendChild(title);
+            return container;
+        }
+
+        function addAnswerToggle(container, answerContent) {
+            if (answerContent) {
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'problem-answer';
+                answerDiv.innerHTML = `<b>정답:</b><br>${answerContent.trim().replace(/\n/g, '<br>')}`;
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'toggle-answer-btn';
+                toggleBtn.textContent = 'Show Answer';
+                toggleBtn.onclick = () => {
+                    const isHidden = answerDiv.style.display === 'none';
+                    answerDiv.style.display = isHidden ? 'block' : 'none';
+                    toggleBtn.textContent = isHidden ? 'Hide Answer' : 'Show Answer';
+                };
+                container.appendChild(toggleBtn);
+                container.appendChild(answerDiv);
+            }
+        }
+        
+        function renderGenericProblem(container, questionContent) {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'problem-question';
+            questionDiv.innerHTML = questionContent.replace(/\n/g, '<br>');
+            container.appendChild(questionDiv);
+        }
+
         function renderProblems(content) {
             problemsOutput.innerHTML = '';
-            // Split the content into individual problems
-            const problems = content.split(/\u005B문제 \\d+\u005D/).filter(p => p.trim() !== '');
+            const problemRegex = /\[문제 (\d+): Type (\d+)\]/g;
+            const parts = content.split(problemRegex);
+            
+            let i = 1;
+            while (i < parts.length) {
+                const problemNumber = parts[i];
+                const problemType = parts[i+1];
+                const problemContent = parts[i+2];
 
-            problems.forEach((problem, index) => {
-                const problemContainer = document.createElement('div');
-                problemContainer.className = 'problem-container';
-
-                const title = document.createElement('div');
-                title.className = 'problem-title';
-                title.textContent = `[문제 ${index + 1}]`;
-                problemContainer.appendChild(title);
-
-                const questionContent = problem.split('정답:')[0];
-                const answerContent = problem.split('정답:')[1];
-
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'problem-question';
-                questionDiv.innerHTML = questionContent.replace(/\\n/g, '<br>');
-                problemContainer.appendChild(questionDiv);
-
-                if (answerContent) {
-                    const answerDiv = document.createElement('div');
-                    answerDiv.className = 'problem-answer';
-                    answerDiv.innerHTML = `<b>정답:</b><br>${answerContent.trim().replace(/\\n/g, '<br>')}`;
-                    
-                    const toggleBtn = document.createElement('button');
-                    toggleBtn.className = 'toggle-answer-btn';
-                    toggleBtn.textContent = 'Show Answer';
-                    toggleBtn.onclick = () => {
-                        const isHidden = answerDiv.style.display === 'none';
-                        answerDiv.style.display = isHidden ? 'block' : 'none';
-                        toggleBtn.textContent = isHidden ? 'Hide Answer' : 'Show Answer';
-                    };
-                    
-                    problemContainer.appendChild(toggleBtn);
-                    problemContainer.appendChild(answerDiv);
+                if (!problemContent) {
+                    i += 3;
+                    continue;
                 }
 
-                problemsOutput.appendChild(problemContainer);
-            });
+                const [question, answer] = problemContent.split('정답:');
+                
+                const container = createBaseProblemElement(`[문제 ${problemNumber}: Type ${problemType}]`);
+                
+                renderGenericProblem(container, question);
+
+                addAnswerToggle(container, answer);
+                problemsOutput.appendChild(container);
+                i += 3;
+            }
         }
+
+        // --- Main Event Listener ---
 
         generateProblemsBtn.addEventListener('click', async () => {
             const passage = textOutput.value;
@@ -244,21 +327,19 @@
                 alert('Please provide a passage first.');
                 return;
             }
-
             problemsOutput.innerHTML = 'Generating problems...';
+            const selectedModel = modelSelect.value;
 
-            const userPrompt = `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should be in the style of a Korean high school English exam. For each question, start with a clear problem number like [문제 1], [문제 2], etc. After the question, provide the correct answer starting with a new line and the label "정답:".\n\nPlease include a mix of the following 6 types of questions:\n\n**Passage:**\n${passage}\n\n---\n\n**Question Types to Generate:**\n\n**Type 1: Find the Right Word**\n- Task: Create a summary or outline of the passage with 3-5 blanks (e.g., (A), (B), (C)...).\n- Conditions: For some blanks, provide a list of 5-6 words from which the user must choose. For other blanks, instruct the user to find the exact word(s) from the passage without transformation. Clearly state these conditions under a "<조건>" section.\n\n**Type 2: Check Grammar Error**\n- Task: Rewrite a portion of the passage, introducing 2-3 subtle grammatical errors.\n- Conditions: Instruct the user to find all the errors and correct them. You can either present the text without hints, or mark 5-7 potential error locations (a, b, c, d, e...) and ask the user to identify the incorrect ones.\n\n**Type 3: Fill the Summary (with Variation)**\n- Task: Create a 1-2 sentence summary of the passage with 3-4 blanks.\n- Conditions: Instruct the user to fill the blanks using words from the passage. Specify which blanks require the word to be used **as-is** and which require **grammatical transformation**. Specify the number of words for each blank.\n\n**Type 4: Rearrange Two Sentences**\n- Task: Select two sentences from the passage. Replace them with blanks (A) and (B).\n- Conditions: Provide a single, scrambled list containing all the words for *both* sentences mixed together. Instruct the user to reconstruct both sentences. State that one word in the list needs to be grammatically transformed.\n\n**Type 5: Paragraph & Sentence Rearrangement**\n- This is a two-part question.\n- Part 1: Take a section of the passage, divide it into 4 logical chunks (A, B, C, D), and scramble their order. Ask the user to find the correct order.\n- Part 2: Create a final summary sentence with a blank. Provide a scrambled list of 8-10 words to fill the blank.\n- Conditions for Part 2: Instruct the user to construct the sentence, transforming 2-3 of the words as needed.\n\n**Type 6: Free-form Blank Filling**\n- Task: Create a summary of the passage with two large blanks, (A) and (B).\n- Conditions: For each blank, provide a small list of 2-4 required words that must be included. Instruct the user to write their own sentence for each blank. The final sentence for each blank must have a specific word count (e.g., (A) 6 words, (B) 7 words). The given words must be used without transformation.`
+            const userPrompt = `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should be in the style of a Korean high school English exam. For each question, start with a clear problem number and type, like [문제 1: Type 3]. After the question, provide the correct answer starting with a new line and the label "정답:".\n\nPlease include a mix of the following 6 types of questions:\n\n**Passage:**\n${passage}\n\n---\n\n**Question Types to Generate:**\n\n**Type 1: Find the Right Word**\n- Task: Create a summary or outline of the passage with 3-5 blanks (e.g., (A), (B), (C)...).\n- Conditions: For some blanks, provide a list of 5-6 words from which the user must choose. For other blanks, instruct the user to find the exact word(s) from the passage without transformation. Clearly state these conditions under a "<조건>" section.\n\n**Type 2: Check Grammar Error**\n- Task: Rewrite a portion of the passage, introducing 2-3 subtle grammatical errors.\n- Conditions: Instruct the user to find all the errors and correct them. You can either present the text without hints, or mark 5-7 potential error locations (a, b, c, d, e...) and ask the user to identify the incorrect ones.\n\n**Type 3: Fill the Summary (with Variation)**\n- Task: Create a 1-2 sentence summary of the passage with 3-4 blanks.\n- Conditions: Instruct the user to fill the blanks using words from the passage. Specify which blanks require the word to be used **as-is** and which require **grammatical transformation**. Specify the number of words for each blank.\n\n**Type 4: Rearrange Two Sentences**\n- Task: Select two sentences from the passage. Replace them with blanks (A) and (B).\n- Conditions: Provide a single, scrambled list containing all the words for *both* sentences mixed together. Instruct the user to reconstruct both sentences. State that one word in the list needs to be grammatically transformed.\n\n**Type 5: Paragraph & Sentence Rearrangement**\n- This is a two-part question.\n- Part 1: Take a section of the passage, divide it into 4 logical chunks (A, B, C, D), and scramble their order. Ask the user to find the correct order.\n- Part 2: Create a final summary sentence with a blank. Provide a scrambled list of 8-10 words to fill the blank.\n- Conditions for Part 2: Instruct the user to construct the sentence, transforming 2-3 of the words as needed.\n\n**Type 6: Free-form Blank Filling**\n- Task: Create a summary of the passage with two large blanks, (A), and (B).\n- Conditions: For each blank, provide a small list of 2-4 required words that must be included. Instruct the user to write their own sentence for each blank. The final sentence for each blank must have a specific word count (e.g., (A) 6 words, (B) 7 words). The given words must be used without transformation.`
 
             try {
                 const response = await fetch('/api/openai', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'gpt-4-turbo', // Using a more advanced model for better results
+                        model: selectedModel,
                         messages: [
-                            { role: 'system', content: 'You are an expert assistant who creates high-quality, subjective English questions in the style of Korean high school exams. You must format your entire response as a single block of text. Each problem must start with a unique number identifier like [문제 1], [문제 2], etc. The answer for each problem must start on a new line, prefixed with "정답:".' },
+                            { role: 'system', content: 'You are an expert assistant who creates high-quality, subjective English questions in the style of Korean high school exams. You must format your entire response as a single block of text. Each problem must start with a unique number and type identifier like [문제 1: Type 3]. The answer for each problem must start on a new line, prefixed with "정답:".' },
                             { role: 'user', content: userPrompt },
                         ],
                     }),
