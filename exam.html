@@ -46,6 +46,16 @@
         <textarea id="text-output" placeholder="Extracted text will appear here..."></textarea>
 
         <div class="button-container">
+            <input type="text" id="passage-title" placeholder="Passage Title">
+            <button id="save-passage">Save Passage</button>
+        </div>
+
+        <div class="button-container">
+            <select id="passage-select"><option value="">Select a passage</option></select>
+            <button id="load-passage">Load Passage</button>
+        </div>
+
+        <div class="button-container">
             <button id="generate-problems">Generate Problems</button>
         </div>
 
@@ -53,12 +63,57 @@
     </div>
 
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
-    <script>
+    <script type="module">
+        import { savePassage, getPassages, getPassage } from './public/js/firebase.js';
+
         const imageUpload = document.getElementById('image-upload');
         const imagePreview = document.getElementById('image-preview');
         const textOutput = document.getElementById('text-output');
         const generateProblemsBtn = document.getElementById('generate-problems');
         const problemsOutput = document.getElementById('problems-output');
+        const savePassageBtn = document.getElementById('save-passage');
+        const passageTitleInput = document.getElementById('passage-title');
+        const passageSelect = document.getElementById('passage-select');
+        const loadPassageBtn = document.getElementById('load-passage');
+
+        async function loadPassages() {
+            const passages = await getPassages();
+            passageSelect.innerHTML = '<option value="">Select a passage</option>';
+            for (const title in passages) {
+                const option = document.createElement('option');
+                option.value = title;
+                option.textContent = title;
+                passageSelect.appendChild(option);
+            }
+        }
+
+        savePassageBtn.addEventListener('click', async () => {
+            const title = passageTitleInput.value.trim();
+            const content = textOutput.value.trim();
+
+            if (!title || !content) {
+                alert('Please provide a title and content for the passage.');
+                return;
+            }
+
+            await savePassage(title, content);
+            alert('Passage saved successfully!');
+            passageTitleInput.value = '';
+            loadPassages();
+        });
+
+        loadPassageBtn.addEventListener('click', async () => {
+            const title = passageSelect.value;
+            if (!title) {
+                alert('Please select a passage to load.');
+                return;
+            }
+
+            const passage = await getPassage(title);
+            if (passage) {
+                textOutput.value = passage.content;
+            }
+        });
 
         imageUpload.addEventListener('change', async (event) => {
             const file = event.target.files[0];
@@ -79,7 +134,8 @@
                     logger: m => console.log(m) 
                 }
             );
-            textOutput.value = text;
+            const processedText = text.replace(/\n/g, ' ');
+            textOutput.value = processedText;
         });
 
         generateProblemsBtn.addEventListener('click', async () => {
@@ -100,8 +156,8 @@
                     body: JSON.stringify({
                         model: 'gpt-3.5-turbo',
                         messages: [
-                            { role: 'system', content: 'You are an assistant that creates subjective questions for English learners.' },
-                            { role: 'user', content: `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should test comprehension and critical thinking about the text. After each question, add a short note in parentheses about what a good answer should include.\n\nPassage:\n${passage}` },
+                            { role: 'system', content: 'You are an expert assistant who creates high-quality, subjective English questions in the style of Korean high school exams.' },
+                            { role: 'user', content: `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should be in the style of a Korean high school English exam. Specifically, include a mix of the following types of questions:\n\n1.  **Sentence Arrangement:** Provide a sentence from the passage with the words scrambled, and ask the user to arrange them correctly.\n2.  **Error Correction:** Present a sentence from the passage with a subtle grammatical error and ask the user to identify and correct it.\n3.  **Summary Completion:** Provide a one-sentence summary of the passage with two key words blanked out (marked as (A) and (B)) and ask the user to fill them in using words from the text.\n4.  **Answering in English:** Ask a question that requires the user to write a short, factual answer in English based on the passage.\n\nFor each question, please provide the question first, and then the correct answer on a new line, labeled clearly.\n\nPassage:\n${passage}` },
                         ],
                     }),
                 });
@@ -119,6 +175,8 @@
                 problemsOutput.innerHTML = 'Error: Unable to connect to the API.';
             }
         });
+
+        loadPassages();
     </script>
 </body>
 </html>

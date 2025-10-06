@@ -18,16 +18,34 @@ const app = initializeApp(firebaseConfig);
 
 const db =  getDatabase(app);
 const dbRef = ref(db);
+const userId = "defaultUser";
 
+export async function addWordbook(wordbookId, wordbookName) {
+    const wordbookRef = ref(db, `users/${userId}/words/${wordbookId}`);
+    await set(wordbookRef, { name: wordbookName });
+}
+
+export async function removeWordbook(wordbookId) {
+    const wordbookRef = ref(db, `users/${userId}/words/${wordbookId}`);
+    await remove(wordbookRef);
+}
+
+export async function getWordbooks() {
+    const wordbooksRef = ref(db, `users/${userId}/words`);
+    const snapshot = await get(wordbooksRef);
+    return snapshot.exists() ? snapshot.val() : {};
+}
+
+//단어 추가
 export function insertWord(category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
-    set(ref(db, `${category}/${chapter}/${word}`), {
+    set(ref(db, `users/${userId}/words/${category}/${chapter}/${word}`), {
         word, ex1, ex2, ex3, ex4, ex5
     });
 }
 
-// 단어 수를 가져오는 함수
+//단어 수 가져오기
 export async function getWordCount(category, chapter) {
-    const chapterRef = child(dbRef, `${category}/${chapter}`);
+    const chapterRef = child(dbRef, `users/${userId}/words/${category}/${chapter}`);
     const snapshot = await get(chapterRef);
     if (snapshot.exists()) {
         return Object.keys(snapshot.val()).length;
@@ -36,27 +54,16 @@ export async function getWordCount(category, chapter) {
     }
 }
 
-// 단어 삭제 함수
+//단어 삭제
 export async function deleteWord(category, chapter, word) {
-    const wordRef = ref(db, `${category}/${chapter}/${word}`);
+    const wordRef = ref(db, `users/${userId}/words/${category}/${chapter}/${word}`);
     await remove(wordRef);
 }
 
-export async function getChaptersFromFirebase(category) {
-    const categoryRef = child(dbRef, category);
-    const snapshot = await get(categoryRef);
-
-    if (snapshot.exists()) {
-        return snapshot.val();
-    } else {
-        console.warn(`No data found for category ${category}`);
-        return null;
-    }
-}
-
+//전체 데이터 불러오기
 export function loadFirebaseData() {
     return new Promise((resolve, reject) => {
-        get(dbRef).then((snapshot) => {
+        get(child(dbRef, `users/${userId}/words`)).then((snapshot) => {
             try {
                 if (!snapshot.exists()) {
                     reject(new Error('No data available'));
@@ -67,8 +74,6 @@ export function loadFirebaseData() {
                 const firebaseData = {};
 
                 for (const wordbook in rawData) {
-                    if (wordbook === 'openai') continue; // Skip openai data
-                    
                     firebaseData[wordbook] = {};
                     for (const chapter in rawData[wordbook]) {
                         firebaseData[wordbook][chapter] = [];
@@ -76,7 +81,6 @@ export function loadFirebaseData() {
                             const wordData = rawData[wordbook][chapter][wordKey];
                             const exampleSentences = [wordData.ex1, wordData.ex2, wordData.ex3, wordData.ex4, wordData.ex5].filter(Boolean);
                             
-                            // Create an array of example pairs (english, korean)
                             const examples = exampleSentences.map(example => {
                                 const [english, korean] = example.split('|');
                                 const maskedEnglish = english.replace(new RegExp(`\\b${wordData.word}\\b`, 'gi'), (match) => {
@@ -100,4 +104,21 @@ export function loadFirebaseData() {
             }
         }).catch(reject);
     });
+}
+
+export async function savePassage(title, content) {
+    const passageRef = ref(db, `users/${userId}/passages/${title}`);
+    await set(passageRef, { content });
+}
+
+export async function getPassages() {
+    const passagesRef = ref(db, `users/${userId}/passages`);
+    const snapshot = await get(passagesRef);
+    return snapshot.exists() ? snapshot.val() : {};
+}
+
+export async function getPassage(title) {
+    const passageRef = ref(db, `users/${userId}/passages/${title}`);
+    const snapshot = await get(passageRef);
+    return snapshot.exists() ? snapshot.val() : null;
 }
