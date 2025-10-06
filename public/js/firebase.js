@@ -16,32 +16,34 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db);
 
-export async function addWordbook(userId, wordbookId, wordbookName) {
+const userId = "defaultUser";
+
+export async function addWordbook(wordbookId, wordbookName) {
     const wordbookRef = ref(db, `users/${userId}/words/${wordbookId}`);
     await set(wordbookRef, { name: wordbookName });
 }
 
-export async function removeWordbook(userId, wordbookId) {
+export async function removeWordbook(wordbookId) {
     const wordbookRef = ref(db, `users/${userId}/words/${wordbookId}`);
     await remove(wordbookRef);
 }
 
-export async function getWordbooks(userId) {
+export async function getWordbooks() {
     const wordbooksRef = ref(db, `users/${userId}/words`);
     const snapshot = await get(wordbooksRef);
     return snapshot.exists() ? snapshot.val() : {};
 }
 
 //단어 추가
-export function insertWord(userid, category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
-    set(ref(db, `users/${userid}/words/${category}/${chapter}/${word}`), {
+export function insertWord(category, chapter, word, ex1, ex2, ex3, ex4, ex5) {
+    set(ref(db, `users/${userId}/words/${category}/${chapter}/${word}`), {
         word, ex1, ex2, ex3, ex4, ex5
     });
 }
 
 //단어 수 가져오기
-export async function getWordCount(userid, category, chapter) {
-    const chapterRef = child(dbRef, `users/${userid}/words/${category}/${chapter}`);
+export async function getWordCount(category, chapter) {
+    const chapterRef = child(dbRef, `users/${userId}/words/${category}/${chapter}`);
     const snapshot = await get(chapterRef);
     if (snapshot.exists()) {
         return Object.keys(snapshot.val()).length;
@@ -51,15 +53,15 @@ export async function getWordCount(userid, category, chapter) {
 }
 
 //단어 삭제
-export async function deleteWord(userid, category, chapter, word) {
-    const wordRef = ref(db, `users/${userid}/words/${category}/${chapter}/${word}`);
+export async function deleteWord(category, chapter, word) {
+    const wordRef = ref(db, `users/${userId}/words/${category}/${chapter}/${word}`);
     await remove(wordRef);
 }
 
 //전체 데이터 불러오기
-export function loadFirebaseData(userid) {
+export function loadFirebaseData() {
     return new Promise((resolve, reject) => {
-        get(child(dbRef, `users/${userid}/words`)).then((snapshot) => {
+        get(child(dbRef, `users/${userId}/words`)).then((snapshot) => {
             try {
                 if (!snapshot.exists()) {
                     reject(new Error('No data available'));

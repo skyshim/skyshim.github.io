@@ -14,26 +14,17 @@ app.use(cors());
 // 정적 파일 제공
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// 기본 HTML 제공
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
-});
-
-app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'signup.html'));
-});
-
-app.get('/home', (req, res) => {
-    const user = req.query.user; // 프론트에서 전달받은 유저 정보 확인
-    if (!user) {
-        return res.status(401).send('Unauthorized: Please log in');
-    }
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // wordtest.html 제공
 app.get('/wordtest', (req, res) => {
     res.sendFile(path.join(__dirname, 'wordtest.html'));
+});
+
+app.get('/exam', (req, res) => {
+    res.sendFile(path.join(__dirname, 'exam.html'));
 });
 
 

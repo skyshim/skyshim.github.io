@@ -1,6 +1,5 @@
 import { insertWord, getWordCount, deleteWord } from "./firebase.js";
 import { addWordbook, removeWordbook, getWordbooks } from "./firebase.js";
-import  { auth } from "./auth.js"
 
 
 const word_input = document.getElementById('wordInput')
@@ -15,53 +14,36 @@ const examples = []
 
 //단어장 추가
 document.getElementById("addWordbook").addEventListener("click", async () => {
-    const userId = auth.currentUser?.uid;
     const wordbookId = document.getElementById("wordbookIdInput").value.trim();
     const wordbookName = document.getElementById("wordbookNameInput").value.trim();
 
-    if (!userId) {
-        alert("로그인이 필요합니다.");
-        return;
-    }
     if (!wordbookId || !wordbookName) {
         alert("단어장 ID와 이름을 입력해주세요.");
         return;
     }
 
-    await addWordbook(userId, wordbookId, wordbookName);
+    await addWordbook(wordbookId, wordbookName);
     alert("단어장이 추가되었습니다.");
     loadWordbooks(); // 단어장 목록 갱신
 });
 
 //단어장 삭제 
 document.getElementById("removeWordbook").addEventListener("click", async () => {
-    const userId = auth.currentUser?.uid;
     const wordbookId = document.getElementById("wordbookIdInput").value.trim();
 
-    if (!userId) {
-        alert("로그인이 필요합니다.");
-        return;
-    }
     if (!wordbookId) {
         alert("삭제할 단어장의 ID를 입력해주세요.");
         return;
     }
 
-    await removeWordbook(userId, wordbookId);
+    await removeWordbook(wordbookId);
     alert("단어장이 삭제되었습니다.");
     loadWordbooks(); // 단어장 목록 갱신
 });
 
 // 단어장 목록 불러오기
 async function loadWordbooks() {
-    const userId = auth.currentUser?.uid;
-
-    if (!userId) {
-        alert("로그인이 필요합니다.");
-        return;
-    }
-
-    const wordbooks = await getWordbooks(userId);
+    const wordbooks = await getWordbooks();
     updateWordbookUI(wordbooks);
 }
 
@@ -90,7 +72,7 @@ loadWordbooks();
 
 
 //단어 추가
-async function add_word(userid) {
+async function add_word() {
     const word = word_input.value;
     const chapter = chapter_input.value;
 
@@ -105,9 +87,9 @@ async function add_word(userid) {
             const ex5 = examples[4];
             console.log(examples);
 
-            insertWord(userid, cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5);
+            insertWord(cur_category, chapter, word, ex1, ex2, ex3, ex4, ex5);
             
-            const wordCount = await getWordCount(userid, cur_category, chapter);
+            const wordCount = await getWordCount(cur_category, chapter);
             alert(`Successfully added the word '${word}' in chapter ${chapter}. Total words in this chapter: ${wordCount}`);
             
             cur_category = "";
@@ -125,7 +107,6 @@ async function add_word(userid) {
 }
 
 deleteword_btn.addEventListener('click', async () => {
-    localStorage.getItem("loggedInUser")
     
     const word = word_input.value;
     const chapter = chapter_input.value;
@@ -133,8 +114,7 @@ deleteword_btn.addEventListener('click', async () => {
     if (cur_category !== "" && chapter !== "" && word !== "") {
         const confirmDelete = confirm(`Are you sure you want to delete the word '${word}' from chapter ${chapter}?`);
         if (confirmDelete) {
-            const userid = localStorage.getItem('loggedInUser'); // 로그인된 유저 ID 가져오기
-            await deleteWord(userid, cur_category, chapter, word);
+            await deleteWord(cur_category, chapter, word);
             alert(`Successfully deleted the word '${word}' from chapter ${chapter}.`);
 
             cur_category = "";
@@ -155,61 +135,10 @@ window.onkeydown = (e) => {
     const code = e.code;
 
     if (code === 'Enter') {
-        add_word(localStorage.getItem("loggedInUser"));
+        add_word();
     }
 }
 
 addword_btn.addEventListener('click', function() {
-    add_word(localStorage.getItem("loggedInUser"));
+    add_word();
 })
-
-wordtest_btn.addEventListener('click', function() {
-    window.open('../wordtest', '_self')
-})
-
-
-async function create5exs(word) {
-    const examples5 = document.getElementById('examples5')
-
-    examples.splice(0) //examples 초기화
-    examples5.innerHTML = ''
-    
-    if (!word) {
-        alert('Please enter a word!')
-        return;
-    }
-    
-    try {
-        const response = await fetch('https://skyshim-github-io.onrender.com/api/openai', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
-                messages: [
-                    { role: 'system', content: 'You are an assistant that provides English example sentences.' },
-                    { role: 'user', content: `provide 5 example sentences and korean meanings using the word: ${word}. Do not show index. Use the original form of the word only. Comply with the form: "example sentence.|korean meanings."`},
-                ],
-            }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            const examplesList = data.choices[0].message.content.split('\n').filter(line => line.trim());
-            examplesList.forEach(example => {
-                examples.push(example);
-                const p = document.createElement('p');
-                p.textContent = example;
-                examples5.appendChild(p);
-            });
-        } else {
-            console.error(data);
-            alert('Error: Could not generate examples. Check the console for details.');
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Error: Unable to connect to the API.');
-    }
-}
