@@ -28,6 +28,10 @@ app.get('/wordtest', (req, res) => {
     res.sendFile(path.join(__dirname, 'wordtest.html'));
 });
 
+app.get('/exam', (req, res) => {
+    res.sendFile(path.join(__dirname, 'exam.html'));
+});
+
 
 // OpenAI API 프록시
 app.use(express.json());
