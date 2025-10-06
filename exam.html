@@ -10,26 +10,82 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             text-align: center;
+            background-color: #f4f4f9;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         #image-preview {
             max-width: 100%;
             margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         #text-output {
             width: 100%;
             height: 200px;
             margin-top: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            box-sizing: border-box;
         }
         #problems-output {
-            margin-top: 20px;
+            margin-top: 30px;
             text-align: left;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
         }
         .button-container {
             margin-top: 20px;
+        }
+        .problem-container {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .problem-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .problem-question, .problem-conditions, .problem-answer {
+            margin-bottom: 10px;
+        }
+        .problem-conditions {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .problem-answer {
+            padding: 10px;
+            background-color: #e6f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            display: none; /* Initially hidden */
+        }
+        .toggle-answer-btn {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            cursor: pointer;
+            border: 1px solid #007bff;
+            background-color: #fff;
+            color: #007bff;
+            border-radius: 4px;
+        }
+        .toggle-answer-btn:hover {
+            background-color: #007bff;
+            color: #fff;
         }
     </style>
 </head>
@@ -134,9 +190,53 @@
                     logger: m => console.log(m) 
                 }
             );
-            const processedText = text.replace(/\n/g, ' ');
+            const processedText = text.replace(/\\n/g, ' ');
             textOutput.value = processedText;
         });
+
+        function renderProblems(content) {
+            problemsOutput.innerHTML = '';
+            // Split the content into individual problems
+            const problems = content.split(/\u005B문제 \\d+\u005D/).filter(p => p.trim() !== '');
+
+            problems.forEach((problem, index) => {
+                const problemContainer = document.createElement('div');
+                problemContainer.className = 'problem-container';
+
+                const title = document.createElement('div');
+                title.className = 'problem-title';
+                title.textContent = `[문제 ${index + 1}]`;
+                problemContainer.appendChild(title);
+
+                const questionContent = problem.split('정답:')[0];
+                const answerContent = problem.split('정답:')[1];
+
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'problem-question';
+                questionDiv.innerHTML = questionContent.replace(/\\n/g, '<br>');
+                problemContainer.appendChild(questionDiv);
+
+                if (answerContent) {
+                    const answerDiv = document.createElement('div');
+                    answerDiv.className = 'problem-answer';
+                    answerDiv.innerHTML = `<b>정답:</b><br>${answerContent.trim().replace(/\\n/g, '<br>')}`;
+                    
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.className = 'toggle-answer-btn';
+                    toggleBtn.textContent = 'Show Answer';
+                    toggleBtn.onclick = () => {
+                        const isHidden = answerDiv.style.display === 'none';
+                        answerDiv.style.display = isHidden ? 'block' : 'none';
+                        toggleBtn.textContent = isHidden ? 'Hide Answer' : 'Show Answer';
+                    };
+                    
+                    problemContainer.appendChild(toggleBtn);
+                    problemContainer.appendChild(answerDiv);
+                }
+
+                problemsOutput.appendChild(problemContainer);
+            });
+        }
 
         generateProblemsBtn.addEventListener('click', async () => {
             const passage = textOutput.value;
@@ -147,6 +247,8 @@
 
             problemsOutput.innerHTML = 'Generating problems...';
 
+            const userPrompt = `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should be in the style of a Korean high school English exam. For each question, start with a clear problem number like [문제 1], [문제 2], etc. After the question, provide the correct answer starting with a new line and the label "정답:".\n\nPlease include a mix of the following 6 types of questions:\n\n**Passage:**\n${passage}\n\n---\n\n**Question Types to Generate:**\n\n**Type 1: Find the Right Word**\n- Task: Create a summary or outline of the passage with 3-5 blanks (e.g., (A), (B), (C)...).\n- Conditions: For some blanks, provide a list of 5-6 words from which the user must choose. For other blanks, instruct the user to find the exact word(s) from the passage without transformation. Clearly state these conditions under a "<조건>" section.\n\n**Type 2: Check Grammar Error**\n- Task: Rewrite a portion of the passage, introducing 2-3 subtle grammatical errors.\n- Conditions: Instruct the user to find all the errors and correct them. You can either present the text without hints, or mark 5-7 potential error locations (a, b, c, d, e...) and ask the user to identify the incorrect ones.\n\n**Type 3: Fill the Summary (with Variation)**\n- Task: Create a 1-2 sentence summary of the passage with 3-4 blanks.\n- Conditions: Instruct the user to fill the blanks using words from the passage. Specify which blanks require the word to be used **as-is** and which require **grammatical transformation**. Specify the number of words for each blank.\n\n**Type 4: Rearrange Two Sentences**\n- Task: Select two sentences from the passage. Replace them with blanks (A) and (B).\n- Conditions: Provide a single, scrambled list containing all the words for *both* sentences mixed together. Instruct the user to reconstruct both sentences. State that one word in the list needs to be grammatically transformed.\n\n**Type 5: Paragraph & Sentence Rearrangement**\n- This is a two-part question.\n- Part 1: Take a section of the passage, divide it into 4 logical chunks (A, B, C, D), and scramble their order. Ask the user to find the correct order.\n- Part 2: Create a final summary sentence with a blank. Provide a scrambled list of 8-10 words to fill the blank.\n- Conditions for Part 2: Instruct the user to construct the sentence, transforming 2-3 of the words as needed.\n\n**Type 6: Free-form Blank Filling**\n- Task: Create a summary of the passage with two large blanks, (A) and (B).\n- Conditions: For each blank, provide a small list of 2-4 required words that must be included. Instruct the user to write their own sentence for each blank. The final sentence for each blank must have a specific word count (e.g., (A) 6 words, (B) 7 words). The given words must be used without transformation.`
+
             try {
                 const response = await fetch('/api/openai', {
                     method: 'POST',
@@ -154,10 +256,10 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        model: 'gpt-3.5-turbo',
+                        model: 'gpt-4-turbo', // Using a more advanced model for better results
                         messages: [
-                            { role: 'system', content: 'You are an expert assistant who creates high-quality, subjective English questions in the style of Korean high school exams.' },
-                            { role: 'user', content: `Based on the following passage, create 3-4 subjective questions that a student could answer in writing. The questions should be in the style of a Korean high school English exam. Specifically, include a mix of the following types of questions:\n\n1.  **Sentence Arrangement:** Provide a sentence from the passage with the words scrambled, and ask the user to arrange them correctly.\n2.  **Error Correction:** Present a sentence from the passage with a subtle grammatical error and ask the user to identify and correct it.\n3.  **Summary Completion:** Provide a one-sentence summary of the passage with two key words blanked out (marked as (A) and (B)) and ask the user to fill them in using words from the text.\n4.  **Answering in English:** Ask a question that requires the user to write a short, factual answer in English based on the passage.\n\nFor each question, please provide the question first, and then the correct answer on a new line, labeled clearly.\n\nPassage:\n${passage}` },
+                            { role: 'system', content: 'You are an expert assistant who creates high-quality, subjective English questions in the style of Korean high school exams. You must format your entire response as a single block of text. Each problem must start with a unique number identifier like [문제 1], [문제 2], etc. The answer for each problem must start on a new line, prefixed with "정답:".' },
+                            { role: 'user', content: userPrompt },
                         ],
                     }),
                 });
@@ -165,7 +267,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    problemsOutput.innerHTML = data.choices[0].message.content.replace(/\n/g, '<br>');
+                    renderProblems(data.choices[0].message.content);
                 } else {
                     console.error(data);
                     problemsOutput.innerHTML = 'Error: Could not generate problems. Check the console for details.';
