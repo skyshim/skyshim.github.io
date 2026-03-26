@@ -36,18 +36,34 @@
         }
 
         .button-row button.selected {
-            background-color: #cccccc;  /* 예: 초록색 배경 */
+            background-color: #cccccc;
             color: white;
             font-weight: bold;
+        }
+
+        .save-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 16px auto;
+        }
+        .save-row button {
+            display: inline-block;
+            margin: 0;
         }
     </style>
 </head>
 <body>
-    <h1>⭐2-9 자리배치표⭐</h1>
+    <h1>⭐3-12 자리배치표⭐</h1>
     <p>고정할 앞자리를 클릭하여 선택하세요</p>
     <table id="seatTable"></table>
     <button onclick="shuffle()">자리 섞기</button>
     <input id="fixedPeople" type="text" placeholder="고정석 번호 지정...(띄어쓰기로 구분)" oninput="updateFix()">
+
+    <div class="save-row">
+        <button onclick="saveSeat()">저장</button>
+        <button onclick="loadSeat()">최근 배치 불러오기</button>
+    </div>
 
     <div class="seat-structure">
         <p>자리배치 구조를 선택하세요</p>
@@ -61,10 +77,10 @@
 </body>
 
 <script>
-    const names = [ "강윤서", "김남경", "김윤아", "김하은", "배정미", "신연희", "양서진", "양설아", "유수민", "이유나",
-                    "장하은", "정세윤", "조승연", "한나경", "김동윤", "김시준", "김종윤", "김태우", "김현우", "남효우",
-                    "박재우", "박한결", "심성우", "염태규", "우준모", "윤정후", "이영기", "이재훈", "임도현", "임동후",
-                    "장준우", "장호성", "전현준", "한주원", "홍민혁"]
+    const names = [ "강윤서", "김정인", "김희서", "송시은", "신연희", "조은채", "고경태", "공유찬", "김도근", "김도윤",
+                    "김동건", "김석영", "김세훈", "김원우", "김지우", "남현우", "남효우", "박수현", "배정훈", "서강건",
+                    "손세윤", "송지하", "신슬우", "심성우", "여혁승", "우승민", "윤정후", "이성휘", "이재현", "이태윤",
+                    "이현", "장준우", "최규혁", "한동훈", "한주원"]
     let seats = Array.from({ length: 35 }, (_, index) => index + 1);
     let seats_f = [];
     let people_f = [];
@@ -81,16 +97,10 @@
         const selectedBtn = document.getElementById(`btn-${type}`);
         if (selectedBtn) selectedBtn.classList.add('selected');
         switch (type) {
-            case 4:
-                structure = [5,8,[2,3,4]];
-                break;
-            case 3:
-                structure = [6,6,[0,1,2,3,4]];
-                break;
-            case 0:
-                structure = [6,6,[1,2,3,4,5]];
-                break;
-            }
+            case 4: structure = [5,8,[2,3,4]]; break;
+            case 3: structure = [6,6,[0,1,2,3,4]]; break;
+            case 0: structure = [6,6,[1,2,3,4,5]]; break;
+        }
         loadTable();
     }
 
@@ -108,30 +118,23 @@
             let tr = document.createElement("tr");
             for (let j = 0; j < col; j++) {
                 const td = document.createElement("td");
-
                 td.textContent = names[seats[index]-1];
                 td.id = index;
                 td.addEventListener("click", toggleFix);
-
-                if (seats_f.includes(index)) {
-                    td.classList.add("fixed");
-                }
+                if (seats_f.includes(index)) td.classList.add("fixed");
                 tr.appendChild(td);
                 index++;
             }
-
             table.appendChild(tr);
         }
-        // 마지막행 따로 추가
+
         let tr = document.createElement("tr");
         for (let i = 0; i < col; i++) {
             const td = document.createElement("td");
             if (last_inclusion.includes(i)) {
                 td.textContent = names[seats[index]-1];
                 td.id = index;
-                if (seats_f.includes(index)) {
-                    td.classList.add("fixed");
-                }
+                if (seats_f.includes(index)) td.classList.add("fixed");
                 td.addEventListener("click", toggleFix);
                 index++;
             } else {
@@ -144,20 +147,16 @@
 
     function shuffle() {
         seats = seats.filter(seat => !people_f.includes(seat));
-
         seats = shuffleArray(seats);
-        //빼고 섞기
-
         people_f = shuffleArray(people_f);
 
         let index = 0;
-        for (let i = 0; i <35; i++) {
+        for (let i = 0; i < 35; i++) {
             if (seats_f.includes(i)) {
-                seats.splice(i, 0, people_f[index])
-                index++
+                seats.splice(i, 0, people_f[index]);
+                index++;
             }
         }
-
         loadTable();
     }
 
@@ -172,15 +171,37 @@
         people_f = people_f.map(str => parseInt(str));
     }
 
-    loadTable(); // 페이지 로드 시 테이블 생성
+    function saveSeat() {
+        const data = {
+            seats: seats,
+            seats_f: seats_f,
+            people_f: people_f,
+            fixedInput: document.getElementById("fixedPeople").value
+        };
+        localStorage.setItem("seatSave", JSON.stringify(data));
+        alert("저장되었습니다!");
+    }
+
+    function loadSeat() {
+        const raw = localStorage.getItem("seatSave");
+        if (!raw) { alert("저장된 배치가 없습니다."); return; }
+        const data = JSON.parse(raw);
+        seats = data.seats;
+        seats_f = data.seats_f;
+        people_f = data.people_f;
+        document.getElementById("fixedPeople").value = data.fixedInput || "";
+        loadTable();
+        alert("불러오기 완료!");
+    }
+
+    loadTable();
 
     // =============================================
-    // 코드 편의용 정의함수
 
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1)); // 0부터 i까지의 랜덤 인덱스
-            [arr[i], arr[j]] = [arr[j], arr[i]]; // i와 j 위치의 값을 교환
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
         }
         return arr;
     }
